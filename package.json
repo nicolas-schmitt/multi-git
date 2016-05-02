@@ -1,0 +1,23 @@
+{
+  "name": "multi-git",
+  "version": "0.1.0",
+  "description": "Handle multiple git repositories at once",
+  "bin": {
+    "multi-git": "./bin/multi-git.js"
+  },
+  "main": "./lib/api.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nicolas Schmitt <https://github.com/nicolas-schmitt>",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "cli-table2": "^0.2.0",
+    "colors": "^1.1.2",
+    "lodash": "^4.11.1",
+    "nodegit": "^0.12.2",
+    "q-io": "^1.13.2",
+    "yargs": "^4.6.0"
+  }
+}
