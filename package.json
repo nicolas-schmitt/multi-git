@@ -11,6 +11,13 @@
   },
   "author": "Nicolas Schmitt <https://github.com/nicolas-schmitt>",
   "license": "MIT",
+  "keywords": [
+    "git",
+    "multi",
+    "multiple",
+    "micro",
+    "service"
+  ],
   "dependencies": {
     "chalk": "^1.1.3",
     "cli-table2": "^0.2.0",
