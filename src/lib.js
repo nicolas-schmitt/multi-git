@@ -1,7 +1,34 @@
 'use strict';
 
-const Directory = require('./directory');
-const Group = require('./group');
-const Manager = require('./manager');
+const {
+    runCommand,
+    runStatus,
+    runFetch,
+    runPull,
+    runPush,
+    runCheckout,
+    runAdd,
+    runUnstage,
+    runStash,
+    logSimpleTable,
+    logPullTable,
+    logStatusTable,
+} = require('./client');
 
-module.exports = {Directory, Group, Manager};
+module.exports = {
+    Directory: require('./directory'),
+    Group: require('./group'),
+    Manager: require('./manager'),
+    runCommand,
+    runStatus,
+    runFetch,
+    runPull,
+    runPush,
+    runCheckout,
+    runAdd,
+    runUnstage,
+    runStash,
+    logSimpleTable,
+    logPullTable,
+    logStatusTable,
+};

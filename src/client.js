@@ -5,12 +5,9 @@ const _ = require('lodash');
 const Table = require('cli-table2');
 const yargs = require('yargs');
 
-const Manager = require('./manager');
 const {
     ChainBreaker,
 } = require('./errors');
-
-const manager = new Manager();
 
 yargs.usage('multi-git <command> [options]')
     .command('status', 'Run git status for the selected project group')
@@ -30,9 +27,7 @@ yargs.usage('multi-git <command> [options]')
     .demand(1, 'must provide a valid command')
     .wrap(Math.min(120, yargs.terminalWidth()));
 
-runCommand(_.get(yargs.argv, '_[0]', ''));
-
-function runCommand(command) {
+function runCommand(manager, command) {
     let argv = {};
 
     switch (command) {
@@ -44,7 +39,7 @@ function runCommand(command) {
                 .example('multi-git status -g tools', 'Show the status of the tools project group')
                 .argv;
 
-            runStatus(argv);
+            runStatus(manager, argv);
             break;
 
         case 'fetch':
@@ -55,7 +50,7 @@ function runCommand(command) {
                 .example('multi-git fetch -g tools', 'Run git fetch on the tools project group')
                 .argv;
 
-            runFetch(argv);
+            runFetch(manager, argv);
             break;
 
         case 'pull':
@@ -67,7 +62,7 @@ function runCommand(command) {
                 .example('multi-git pull origin master -g tools', 'Run git pull origin master on the tools project group')
                 .argv;
 
-            runPull(argv);
+            runPull(manager, argv);
             break;
 
         case 'push':
@@ -79,7 +74,7 @@ function runCommand(command) {
                 .example('multi-git push origin master -g tools', 'Run git push origin master on the tools project group')
                 .argv;
 
-            runPush(argv);
+            runPush(manager, argv);
             break;
 
         case 'checkout':
@@ -91,7 +86,7 @@ function runCommand(command) {
                 .example('multi-git checkout develop -g tools', 'Checkout the branch develop of the tools project group')
                 .argv;
 
-            runCheckout(argv);
+            runCheckout(manager, argv);
             break;
 
         case 'add':
@@ -103,7 +98,7 @@ function runCommand(command) {
                 .example('multi-git add axe.js -g tools', 'Stage axe.js for the tools project group')
                 .argv;
 
-            runAdd(argv);
+            runAdd(manager, argv);
             break;
 
         case 'unstage':
@@ -115,7 +110,7 @@ function runCommand(command) {
                 .example('multi-git unstage axe.js -g tools', 'Unstage axe.js for the tools project group')
                 .argv;
 
-            runUnstage(argv);
+            runUnstage(manager, argv);
             break;
 
         case 'stash':
@@ -127,7 +122,7 @@ function runCommand(command) {
                 .example('multi-git stash -g tools', 'Stash staged changes for the tools project group')
                 .argv;
 
-            runStash(argv);
+            runStash(manager, argv);
             break;
 
         default:
@@ -139,7 +134,7 @@ function runCommand(command) {
 
 // Commands
 
-function runStatus(argv) {
+function runStatus(manager, argv) {
     const {group: groupName} = argv;
 
     return manager
@@ -151,7 +146,7 @@ function runStatus(argv) {
         .done();
 }
 
-function runFetch(argv) {
+function runFetch(manager, argv) {
     const {group: groupName} = argv;
     const scope = {};
 
@@ -168,7 +163,7 @@ function runFetch(argv) {
         .done();
 }
 
-function runPull(argv) {
+function runPull(manager, argv) {
     const {group: groupName} = argv;
     const [, remoteName, branchName,] = _.get(argv, '_', []);
 
@@ -181,7 +176,7 @@ function runPull(argv) {
         .done();
 }
 
-function runPush(argv) {
+function runPush(manager, argv) {
     const {group: groupName} = argv;
     const [, remoteName, branchName,] = _.get(argv, '_', []);
 
@@ -194,7 +189,7 @@ function runPush(argv) {
         .done();
 }
 
-function runCheckout(argv) {
+function runCheckout(manager, argv) {
     const {group: groupName} = argv;
     const [, branchName] = _.get(argv, '_', []);
     const scope = {};
@@ -212,7 +207,7 @@ function runCheckout(argv) {
         .done();
 }
 
-function runAdd(argv) {
+function runAdd(manager, argv) {
     const {group: groupName} = argv;
     const [, ...files] = _.get(argv, '_', []);
     const scope = {};
@@ -227,7 +222,7 @@ function runAdd(argv) {
         .done();
 }
 
-function runUnstage(argv) {
+function runUnstage(manager, argv) {
     const {group: groupName} = argv;
     const [, ...files] = _.get(argv, '_', []);
     const scope = {};
@@ -242,7 +237,7 @@ function runUnstage(argv) {
         .done();
 }
 
-function runStash(argv) {
+function runStash(manager, argv) {
     const {group: groupName} = argv;
     const [, command] = _.get(argv, '_', []);
     const scope = {};
@@ -352,3 +347,18 @@ function logStatusTable(statutes) {
 
     console.log(table.toString());
 }
+
+module.exports = {
+    runCommand,
+    runStatus,
+    runFetch,
+    runPull,
+    runPush,
+    runCheckout,
+    runAdd,
+    runUnstage,
+    runStash,
+    logSimpleTable,
+    logPullTable,
+    logStatusTable,
+};
