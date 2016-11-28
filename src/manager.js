@@ -14,6 +14,10 @@ const {
 } = require('./errors');
 
 
+/**
+ * Represents a group manager.
+ * Loads the configuration and the active group.
+ */
 class Manager {
     constructor() {
         this.config = null;
@@ -21,6 +25,10 @@ class Manager {
         this.cwd = new Directory();
     }
 
+    /**
+     * Gets the configuration
+     * @return {Promise}
+     */
     getConfig() {
         if (this.config === null) {
             return this
@@ -37,6 +45,13 @@ class Manager {
         }
     }
 
+    /**
+     * Gets multi-git config file, by priority :
+     *  1. current working directory
+     *  2. home directory
+     *  3. module directory
+     * @return {Promise}
+     */
     findConfigFile() {
         const possiblePaths = [
             path.join(process.cwd(), ConfigFileName),
@@ -67,6 +82,11 @@ class Manager {
             });
     }
 
+    /**
+     * Gets a group by its name and sets it as active.
+     * @param {string} groupName - the group name
+     * @return {Promise}
+     */
     getGroup(groupName) {
         if (this.activeGroup) {
             return Promise.resolve(this.activeGroup);
@@ -75,6 +95,12 @@ class Manager {
         }
     }
 
+    /**
+     * Initialize the current group to the requested group.
+     * Defaults to the current working directory.
+     * @param {string} groupName - the group name
+     * @return {Promise}
+     */
     initActiveGroup(groupName) {
         return Promise
             .resolve()
@@ -108,6 +134,11 @@ class Manager {
             });
     }
 
+    /**
+     * Gets a group by its name from the configuration.
+     * @param {string} groupName - the group name
+     * @return {Promise}
+     */
     getGroupByName(groupName) {
         return this
             .getConfig()
@@ -124,6 +155,14 @@ class Manager {
             });
     }
 
+
+    /**
+     * Gets the current working directory group.
+     *  - if the cwd belongs to a git repository
+     * then a group composed of all groups of which the cwd is a member is returned
+     *  - otherwise a group composed of all subdirectories of the cwd is returned
+     * @return {Promise}
+     */
     getCwdGroup() {
         return this
             .cwd

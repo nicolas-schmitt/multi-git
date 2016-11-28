@@ -2,8 +2,6 @@
 
 require('colors');
 const _ = require('lodash');
-const confirm = require('inquirer-confirm');
-const Promise = require('bluebird');
 const Table = require('cli-table2');
 const yargs = require('yargs');
 

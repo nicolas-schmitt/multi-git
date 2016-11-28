@@ -11,6 +11,12 @@ const {
     NoConfigFileError,
 } = require('./errors');
 
+/**
+ * Represents a group of directories.
+ * Either the specified directory or the current working directory.
+ * @constructor
+ * @param {string|object} path - either a directory path or a config object.
+ */
 class Group {
     constructor() {
         if (_.size(arguments) === 1 && _.isObject(arguments[0])) {
@@ -27,6 +33,10 @@ class Group {
         });
     }
 
+    /**
+     * Runs git status
+     * @return {Promise}
+     */
     status() {
         return Promise.map(this.members, (member) => {
             return member
@@ -37,6 +47,11 @@ class Group {
         });
     }
 
+    /**
+     * Runs both git status & this.getVersion(),
+     * merges the result
+     * @return {Promise}
+     */
     detailedStatus() {
         return Promise.map(this.members, (member, i) => {
             return member.detailedStatus()
@@ -53,7 +68,10 @@ class Group {
         });
     }
 
-
+    /**
+     * Runs git fetch
+     * @return {Promise}
+     */
     fetch() {
         return Promise.map(this.members, (member) => {
             return member
@@ -64,6 +82,11 @@ class Group {
         });
     }
 
+    /**
+     * Runs git checkout
+     * @param {string} what - what to checkout
+     * @return {Promise}
+     */
     checkout(what) {
         return Promise.map(this.members, (member) => {
             return member
@@ -74,6 +97,11 @@ class Group {
         });
     }
 
+    /**
+     * Runs git commit
+     * @param {string} messgae - the commit message
+     * @return {Promise}
+     */
     commit(message) {
         return Promise.map(this.members, (member) => {
             return member
@@ -84,6 +112,10 @@ class Group {
         });
     }
 
+    /**
+     * Runs git branch
+     * @return {Promise}
+     */
     branch() {
         return Promise.map(this.members, (member) => {
             return member
@@ -94,6 +126,11 @@ class Group {
         });
     }
 
+    /**
+     * Runs git branch -d
+     * @param {string} branchName - the name of the branch to delete
+     * @return {Promise}
+     */
     deleteBranch(branchName) {
         return Promise.map(this.members, (member) => {
             return member
@@ -104,6 +141,12 @@ class Group {
         });
     }
 
+    /**
+     * Runs git branch
+     * @param {string} branchName - the name of the branch to create
+     * @param {string} startPoint - the branch starting point
+     * @return {Promise}
+     */
     createBranch(branchName, startPoint) {
         return Promise.map(this.members, (member) => {
             return member
@@ -114,6 +157,12 @@ class Group {
         });
     }
 
+    /**
+     * Runs git push
+     * @param {string} remoteName - the remote name to push to
+     * @param {string} branchName - the branch name to push
+     * @return {Promise}
+     */
     push(remoteName, branchName) {
         return Promise.map(this.members, (member) => {
             return member
@@ -127,6 +176,11 @@ class Group {
         });
     }
 
+    /**
+     * Runs git push
+     * @param {string} remoteName - the remote name to push to
+     * @return {Promise}
+     */
     pushTags(remoteName) {
         return Promise.map(this.members, (member) => {
             return member
@@ -140,6 +194,13 @@ class Group {
         });
     }
 
+    /**
+     * Runs git pull
+     * @param {string} remoteName - the remote name to pull from
+     * @param {string} branchName - the branch name to pull
+     * @param {array} options - a string array of git pull options
+     * @return {Promise}
+     */
     pull(remoteName, branchName, options) {
         return Promise.map(this.members, (member) => {
             return member
@@ -150,6 +211,13 @@ class Group {
         });
     }
 
+    /**
+     * Runs git merge
+     * @param {string} from - where to merge from (commit hash, branch name)
+     * @param {string} to - where to merge to (commit hash, branch name)
+     * @param {array} options - a string array of git merge options
+     * @return {Promise}
+     */
     mergeFromTo(from, to, options) {
         return Promise.map(this.members, (member) => {
             return member
@@ -160,6 +228,12 @@ class Group {
         });
     }
 
+    /**
+     * Creates a tag
+     * @param {string} tagName - the tag name
+     * @param {string} tagMessage - the tag message
+     * @return {Promise}
+     */
     tag(tagName, tagMessage) {
         return Promise.map(this.members, (member) => {
             return member
@@ -170,6 +244,11 @@ class Group {
         });
     }
 
+    /**
+     * Stages files
+     * @param {array} files - the files to stage
+     * @return {Promise}
+     */
     addFiles(files) {
         return Promise.map(this.members, (member) => {
             return member
@@ -183,6 +262,11 @@ class Group {
         });
     }
 
+    /**
+     * Unstages files
+     * @param {array} files - the files to stage
+     * @return {Promise}
+     */
     unstageFiles(files) {
         return Promise.map(this.members, (member) => {
             return member
@@ -196,19 +280,11 @@ class Group {
         });
     }
 
-    pushAllDefaults() {
-        return Promise.map(this.members, (member) => {
-            return member
-                .pushAllDefaults()
-                .then(() => {
-                    return {isRejected: false, parent: member};
-                })
-                .catch((error) => {
-                    return {isRejected: true, parent: member, error};
-                });
-        });
-    }
-
+    /**
+     * Stash the working directory
+     * @param {array} options - array of options supported by the git stash command
+     * @return {Promise}
+     */
     stash(options) {
         return Promise.map(this.members, (member) => {
             return member
@@ -222,6 +298,10 @@ class Group {
         });
     }
 
+    /**
+     * [git flow] Ensures there is no active release
+     * @return {Promise}
+     */
     ensureNoActiveRelease() {
         return Promise.map(this.members, (member) => {
             return member
@@ -238,6 +318,23 @@ class Group {
                     }
 
                     return true;
+                });
+        });
+    }
+
+    /**
+     * [git flow] Pushes master, develop & tags to origin
+     * @return {Promise}
+     */
+    pushAllDefaults() {
+        return Promise.map(this.members, (member) => {
+            return member
+                .pushAllDefaults()
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
                 });
         });
     }
