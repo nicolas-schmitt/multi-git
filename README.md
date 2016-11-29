@@ -33,55 +33,82 @@ same goes for status, fetch ...
 
 Configuration
 -------------------------------------------------------------------
-multi-git will try to read its configuration file where it's beeing executed.
+multi-git will try to read its configuration file from multiple locations in the following order:
+1. the current working directory
+2. the home directory
+3. the module directory (which will most likely serve as default values)
 
-This file must be named `.multigitconfig` and be in `json` format.
+This file must be named `.mg-config.json` and be in `json` format.
 
 ````json
 {
-    "repositories": [
-        "./group/*",
-        "./some/isolated/path"
-    ]
+    "projects": {
+        "repo1": {
+            "name": "repo1",
+            "path": "/home/ubuntu/workspace/repos/repo1"
+        },
+        "repo2": {
+            "name": "repo2",
+            "path": "/home/ubuntu/workspace/repos/repo2"
+        },
+        "repo3": {
+            "name": "repo3",
+            "path": "/home/ubuntu/workspace/repos/repo3"
+        }
+    },
+    "groups": {
+        "awesome-group": {
+            "name": "awesome-group",
+            "members": [
+                "repo1",
+                "repo2"
+            ]
+        },
+        "magnificent-group": {
+            "name": "magnificent-group",
+            "members": [
+                "repo2",
+                "repo3"
+            ]
+        }
+    }
 }
 ````
+
+* Paths must be absolute
+* Paths can contain ~
+* A project can belong to multiple groups
 
 Available commands
 -------------------------------------------------------------------
 ````bash
 $ multi-git -h
 Commands:
-  status  Run git status
-  fetch   Run git fetch
-  pull    Run git pull
+  status    Run git status for the selected project group
+  fetch     Run git fetch for the selected project group
+  pull      Pull the tracked branch <remote>/<branch> for each project within the group
+  push      Push the tracked branch <remote>/<branch> for each project within the group
+  checkout  Checkout the same branch for each project within the selected group
+  add       Stage one or more files for each project within the selected group
+  unstage   Unstage one or more files for each project within the selected group
+  stash     Stash changes on each project within the selected group
 
 Options:
-  -h, --help  Show help                                                [boolean]
-
-$ multi-git pull -h
-multi-git pull
-
-Options:
-  -h, --help  Show help                                                [boolean]
-  --rebase                                            [boolean] [default: false]
+  -g, --group  The project group name
 ````
 
-FAQ
+Behaviour
 -------------------------------------------------------------------
-This module depends on [nodegit](https://www.npmjs.com/package/nodegit) and might throw some errors about libstdc++.
-If that's the case, please refer to their [README](https://www.npmjs.com/package/nodegit#getting-started).
+You can use multi-git with the _--group_ flag:
+In that case multi-git will try to find the group by its name in the configuration file
+and run the specified command on each group member.
 
+or without:
+In that case multi-git, if the current working directory is a git repository,
+multi-git will run the specified command on each member of each group the cwd belongs ;
+if not, it will run the command on each subdirectories of the cwd.
 
-Roadmap
+Want to contribute?
 -------------------------------------------------------------------
-* [x] git status
-* [x] git fetch
-* [x] git pull
-* [x] git pull --rebase
-* [ ] read actual git configuration
-* [ ] handle missing configuration file
-* [ ] improve error handling and display more information about a pull (commits downloaded)
-* [ ] allow more detailed configuration (repository name, prefix, pull strategy ...)
-* [ ] npm init like for .multigitconfig
-* [ ] interactive mode
-* [ ] branch creation
+Any idea to improve this project would be greatly appreciated.
+Feel free to submit your [pull request](https://github.com/nicolas-schmitt/multi-git/pulls).

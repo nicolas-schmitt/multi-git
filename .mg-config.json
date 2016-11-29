@@ -1,53 +1,8 @@
 {
     "projects": {
-        "repo1": {
-            "name": "repo1",
-            "path": "/home/ubuntu/workspace/repos/repo1"
-        },
-        "repo2": {
-            "name": "repo2",
-            "path": "/home/ubuntu/workspace/repos/repo2"
-        },
-        "repo3": {
-            "name": "repo3",
-            "path": "/home/ubuntu/workspace/repos/repo3"
-        },
-        "repo4": {
-            "name": "repo4",
-            "path": "/home/ubuntu/workspace/repos/repo4"
-        },
-        "repo5": {
-            "name": "repo5",
-            "path": "/home/ubuntu/workspace/repos/repo5"
-        }
     },
     "groups": {
-        "awesome-group": {
-            "name": "awesome-group",
-            "members": [
-                "repo1",
-                "repo2",
-                "repo3",
-                "repo4"
-            ]
-        },
-        "magnificent-group": {
-            "name": "magnificent-group",
-            "members": [
-                "repo1",
-                "repo4",
-                "repo5"
-            ]
-        },
-        "last-group": {
-            "name": "last-group",
-            "members": [
-                "repo4",
-                "repo5"
-            ]
-        }
-
     },
-    "preferences": [
-    ]
+    "preferences": {
+    }
 }
