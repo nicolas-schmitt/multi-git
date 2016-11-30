@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 'use strict';
 
-const _ = require('lodash');
-const yargs = require('yargs');
+require('source-map-support').install();
 
-const Manager = require('../src/manager');
-const {runCommand} = require('../src/client');
+var _ = require('lodash');
+var yargs = require('yargs');
 
-const manager = new Manager();
+var Manager = require('../build/manager');
+var Client = require('../build/client');
 
-runCommand(manager, _.get(yargs.argv, '_[0]', ''));
+var manager = new Manager();
+
+Client.runCommand(manager, _.get(yargs.argv, '_[0]', ''));

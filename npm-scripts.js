@@ -2,7 +2,7 @@
 
 var action = process.argv[2];
 var argv = process.argv.slice(3);
-var valet = require('./src/valet');
+var valet = require('./build/valet');
 
 switch (action) {
     case 'install':

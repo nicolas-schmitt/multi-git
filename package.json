@@ -6,10 +6,14 @@
     "multi-git": "./bin/multi-git.js"
   },
   "main": "./src/lib.js",
+  "engines": {
+    "node": "6.8.0"
+  },
   "scripts": {
+    "build": "babel src -d build -s",
+    "postinstall": "postinstall-build build \"npm run build && node npm-scripts.js install\"",
     "test": "mocha",
-    "watch": "nodemon",
-    "install": "node npm-scripts.js install"
+    "watch": "babel src -d build -s -w"
   },
   "repository": {
     "type": "git",
@@ -31,10 +35,14 @@
     "colors": "^1.1.2",
     "inquirer-confirm": "^0.2.2",
     "lodash": "^4.16.4",
-    "simple-git": "^1.54.0",
+    "postinstall-build": "^2.1.3",
+    "simple-git": "^1.63.0",
+    "source-map-support": "^0.4.6",
     "yargs": "^6.0.0"
   },
   "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-preset-env": "0.0.9",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-spies": "^0.7.1",
@@ -44,5 +52,17 @@
     "mock-fs": "^3.11.0",
     "nodemon": "^1.11.0",
     "proxyquire": "^1.7.10"
+  },
+  "babel": {
+    "presets": [
+      [
+        "env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
+    ]
   }
 }
