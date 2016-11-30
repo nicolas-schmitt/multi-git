@@ -26,31 +26,19 @@ class Directory {
             this.path = process.cwd();
             this.name = path.basename(this.path);
         } else if (arguments.length === 1 && _.isString(arguments[0])) {
-            this.path = this.expandHomeDir(arguments[0]);
+            this.path = fs.expandHomeDir(arguments[0]);
             this.name = path.basename(this.path);
         } else if (arguments.length === 1 && _.isObject(arguments[0])) {
-            this.path = this.expandHomeDir(arguments[0].path);
+            this.path = fs.expandHomeDir(arguments[0].path);
             this.name = arguments[0].name || path.basename(this.path);
         }else if (arguments.length === 2) {
-            this.path = this.expandHomeDir(arguments[0]);
+            this.path = fs.expandHomeDir(arguments[0]);
             this.name = arguments[1];
         }
 
         this._hasGit = null;
         this.git = null;
         this._config = null;
-    }
-
-    /**
-     * Replaces ~ in a given path.
-     * @param {string} pathToExpand - The path to expand.
-     */
-    expandHomeDir(pathToExpand) {
-        if (pathToExpand && pathToExpand[0] === '~') {
-            return path.join(process.env.HOME, pathToExpand.slice(1));
-        }
-
-        return pathToExpand;
     }
 
     /**

@@ -8,7 +8,8 @@
   "main": "./src/lib.js",
   "scripts": {
     "test": "mocha",
-    "watch": "nodemon"
+    "watch": "nodemon",
+    "install": "node npm-scripts.js install"
   },
   "repository": {
     "type": "git",

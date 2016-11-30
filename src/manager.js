@@ -19,6 +19,10 @@ const {
  * Loads the configuration and the active group.
  */
 class Manager {
+    static get ConfigFileName() {
+        return ConfigFileName;
+    }
+
     constructor() {
         this.config = null;
         this.activeGroup = null;
