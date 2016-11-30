@@ -239,14 +239,14 @@ function runUnstage(manager, argv) {
 
 function runStash(manager, argv) {
     const {group: groupName} = argv;
-    const [, command] = _.get(argv, '_', []);
+    const [, ...command] = _.get(argv, '_', []);
     const scope = {};
 
     return manager
         .getGroup(groupName)
         .then((group) => {
             scope.group = group;
-            return group.stash([command]);
+            return group.stash(command);
         })
         .then(logSimpleTable)
         .done();

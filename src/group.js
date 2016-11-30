@@ -54,14 +54,8 @@ class Group {
      */
     detailedStatus() {
         return Promise.map(this.members, (member, i) => {
-            return member.detailedStatus()
-            .then((status) => {
-                if (i === 2) {
-                    throw new NoConfigFileError();
-                } else {
-                    return status;
-                }
-            })
+            return member
+            .detailedStatus()
             .catch((error) => {
                 return {isRejected: true, parent: member, error};
             });
