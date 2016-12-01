@@ -15,7 +15,7 @@ export default class Valet {
                     throw error;
                 }
             })
-            .then((result) => {
+            .then(() => {
                 fs.createReadStream(path.join(__dirname, '../', ConfigFileName))
                 .pipe(fs.createWriteStream(configFilePath));
             })

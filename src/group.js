@@ -46,7 +46,7 @@ export default class Group {
      * @return {Promise}
      */
     detailedStatus() {
-        return Promise.map(this.members, (member, i) => {
+        return Promise.map(this.members, (member) => {
             return member
             .detailedStatus()
             .catch((error) => {
@@ -276,7 +276,7 @@ export default class Group {
         return Promise.map(this.members, (member) => {
             return member
                 .stash(options)
-                .then((result) => {
+                .then(() => {
                     return {isRejected: false, parent: member};
                 })
                 .catch((error) => {

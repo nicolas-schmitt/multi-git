@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import 'colors';
 import _ from 'lodash';
 import Table from 'cli-table2';

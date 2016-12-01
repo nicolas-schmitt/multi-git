@@ -131,7 +131,7 @@ export default class Manager {
                     return member.loadGit();
                 });
             })
-            .then((members) => {
+            .then(() => {
                 return this.activeGroup;
             });
     }

@@ -13,7 +13,8 @@
     "build": "babel src -d build -s",
     "postinstall": "postinstall-build build \"npm run build && node npm-scripts.js install\"",
     "test": "mocha",
-    "watch": "babel src -d build -s -w"
+    "watch": "babel src -d build -s -w",
+    "lint": "eslint src bin"
   },
   "repository": {
     "type": "git",

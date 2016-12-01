@@ -49,7 +49,7 @@ export default class Directory {
                 this._hasGit = stats.isDirectory();
                 return this._hasGit;
             })
-            .catch((error) => {
+            .catch(() => {
                 this._hasGit = false;
                 return this._hasGit;
             });
@@ -303,7 +303,7 @@ export default class Directory {
             const module = JSON.parse(result.toString());
             return module.version;
         })
-        .catch((error) => {
+        .catch(() => {
             return '-';
         });
     }
@@ -433,7 +433,7 @@ export default class Directory {
 
         return this
             .config()
-            .then((config) => {
+            .then(() => {
                 scope.master = scope.config.gitflow.branch.master;
                 scope.develop = scope.config.gitflow.branch.develop;
             })
