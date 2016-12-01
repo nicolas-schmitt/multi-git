@@ -1,26 +1,24 @@
-'use strict';
+import _ from 'lodash';
+import os from 'os';
+import path from 'path';
+import Promise from 'bluebird';
+import SimpleGit from 'simple-git';
 
-const _ = require('lodash');
-const path = require('path');
-const Promise = require('bluebird');
-const SimpleGit = require('simple-git');
-const os = require('os');
-
-const fs = require('./fs');
-const {
+import fs from './fs';
+import {
     ActiveReleaseError,
     DirtyRepositoryError,
     MultipleActiveReleaseError,
     NoPackageError,
     NoActiveReleaseError,
-} = require('./errors');
+} from './errors';
 
 /**
  * Represents a directory.
  * @constructor
  * @param {string|object} path - either a directory path or a config object.
  */
-class Directory {
+export default class Directory {
     constructor() {
         if (arguments.length === 0) {
             this.path = process.cwd();
@@ -525,5 +523,3 @@ class Directory {
             });
     }
 }
-
-module.exports = Directory;

@@ -6,7 +6,7 @@ require('source-map-support').install();
 var _ = require('lodash');
 var yargs = require('yargs');
 
-var Manager = require('../build/manager');
+var Manager = require('../build/manager').default;
 var Client = require('../build/client');
 
 var manager = new Manager();

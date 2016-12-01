@@ -1,6 +1,4 @@
-'use strict';
-
-class DirtyRepositoryError extends Error {
+export class DirtyRepositoryError extends Error {
     constructor(message = 'The repository was dirty') {
         super(message);
 
@@ -8,7 +6,7 @@ class DirtyRepositoryError extends Error {
     }
 }
 
-class NoPackageError extends Error {
+export class NoPackageError extends Error {
     constructor(message = 'There is no package file') {
         super(message);
 
@@ -16,7 +14,7 @@ class NoPackageError extends Error {
     }
 }
 
-class NoActiveReleaseError extends Error {
+export class NoActiveReleaseError extends Error {
     constructor(message = 'There is no active release') {
         super(message);
 
@@ -24,7 +22,7 @@ class NoActiveReleaseError extends Error {
     }
 }
 
-class ActiveReleaseError extends Error {
+export class ActiveReleaseError extends Error {
     constructor(message = 'There is already one active release') {
         super(message);
 
@@ -32,7 +30,7 @@ class ActiveReleaseError extends Error {
     }
 }
 
-class MultipleActiveReleaseError extends Error {
+export class MultipleActiveReleaseError extends Error {
     constructor(message = 'There are more than one active release') {
         super(message);
 
@@ -40,7 +38,7 @@ class MultipleActiveReleaseError extends Error {
     }
 }
 
-class NoConfigFileError extends Error {
+export class NoConfigFileError extends Error {
     constructor(message = 'There is no configuration file') {
         super(message);
 
@@ -48,7 +46,7 @@ class NoConfigFileError extends Error {
     }
 }
 
-class GroupMissingError extends Error {
+export class GroupMissingError extends Error {
     constructor(message = 'Requested group is missing') {
         super(message);
 
@@ -56,21 +54,10 @@ class GroupMissingError extends Error {
     }
 }
 
-class ChainBreaker extends Error {
+export class ChainBreaker extends Error {
     constructor(message = 'This promise chain has been terminated early') {
         super(message);
 
         this.code = 'chain-breaker';
     }
 }
-
-module.exports = {
-    ActiveReleaseError,
-    ChainBreaker,
-    DirtyRepositoryError,
-    GroupMissingError,
-    MultipleActiveReleaseError,
-    NoActiveReleaseError,
-    NoConfigFileError,
-    NoPackageError,
-};

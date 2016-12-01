@@ -1,15 +1,8 @@
-'use strict';
+import _ from 'lodash';
+import Promise from 'bluebird';
 
-const _ = require('lodash');
-const Promise = require('bluebird');
-
-const Directory = require('./directory');
-
-const {
-    ActiveReleaseError,
-    GroupMissingError,
-    NoConfigFileError,
-} = require('./errors');
+import Directory from './directory';
+import {ActiveReleaseError} from './errors';
 
 /**
  * Represents a group of directories.
@@ -17,7 +10,7 @@ const {
  * @constructor
  * @param {string|object} path - either a directory path or a config object.
  */
-class Group {
+export default class Group {
     constructor() {
         if (_.size(arguments) === 1 && _.isObject(arguments[0])) {
             const config = arguments[0];
@@ -333,5 +326,3 @@ class Group {
         });
     }
 }
-
-module.exports = Group;

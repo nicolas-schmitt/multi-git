@@ -1,13 +1,11 @@
-'use strict';
+import {promisify} from 'bluebird';
+import fs from 'fs';
+import path from 'path';
 
-const fs = require('fs');
-const path = require('path');
-const Promise = require('bluebird');
-
-fs.statAsync = fs.statAsync || Promise.promisify(fs.stat);
-fs.readFileAsync = fs.readFileAsync || Promise.promisify(fs.readFile);
-fs.writeFileAsync = fs.writeFileAsync || Promise.promisify(fs.writeFile);
-fs.readdirAsync = fs.readdirAsync || Promise.promisify(fs.readdir);
+fs.statAsync = fs.statAsync || promisify(fs.stat);
+fs.readFileAsync = fs.readFileAsync || promisify(fs.readFile);
+fs.writeFileAsync = fs.writeFileAsync || promisify(fs.writeFile);
+fs.readdirAsync = fs.readdirAsync || promisify(fs.readdir);
 fs.expandHomeDir = fs.expandHomeDir || expandHomeDir;
 
 /**

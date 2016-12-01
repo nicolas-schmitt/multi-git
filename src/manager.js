@@ -1,24 +1,22 @@
-'use strict';
+import _ from 'lodash';
+import path from 'path';
+import Promise from 'bluebird';
 
-const _ = require('lodash');
-const path = require('path');
-const Promise = require('bluebird');
-
-const fs = require('./fs');
-const Group = require('./group');
-const Directory = require('./directory');
-const ConfigFileName = '.mg-config.json';
-const {
+import fs from './fs';
+import Directory from './directory';
+import Group from './group';
+import {
     GroupMissingError,
     NoConfigFileError,
-} = require('./errors');
+} from './errors';
 
+const ConfigFileName = '.mg-config.json';
 
 /**
  * Represents a group manager.
  * Loads the configuration and the active group.
  */
-class Manager {
+export default class Manager {
     static get ConfigFileName() {
         return ConfigFileName;
     }
@@ -153,7 +151,10 @@ class Manager {
                     throw new GroupMissingError();
                 }
 
-                group.members = _(config.projects).pick(group.members).values().value();
+                group.members = _.chain(config.projects)
+                    .pick(group.members)
+                    .values()
+                    .value();
 
                 return new Group(group);
             });
@@ -224,5 +225,3 @@ class Manager {
             });
     }
 }
-
-module.exports = Manager;

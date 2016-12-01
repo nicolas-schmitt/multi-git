@@ -1,34 +1,11 @@
-'use strict';
-
-const {
-    runCommand,
-    runStatus,
-    runFetch,
-    runPull,
-    runPush,
-    runCheckout,
-    runAdd,
-    runUnstage,
-    runStash,
-    logSimpleTable,
-    logPullTable,
-    logStatusTable,
-} = require('./client');
+import * as Client from './client';
+import Directory from './directory';
+import Group from './group';
+import Manager from './manager';
 
 module.exports = {
-    Directory: require('./directory'),
-    Group: require('./group'),
-    Manager: require('./manager'),
-    runCommand,
-    runStatus,
-    runFetch,
-    runPull,
-    runPush,
-    runCheckout,
-    runAdd,
-    runUnstage,
-    runStash,
-    logSimpleTable,
-    logPullTable,
-    logStatusTable,
+    Directory,
+    Group,
+    Manager,
+    Client
 };

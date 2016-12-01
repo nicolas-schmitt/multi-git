@@ -1,13 +1,7 @@
-'use strict';
-
-require('colors');
-const _ = require('lodash');
-const Table = require('cli-table2');
-const yargs = require('yargs');
-
-const {
-    ChainBreaker,
-} = require('./errors');
+import 'colors';
+import _ from 'lodash';
+import Table from 'cli-table2';
+import yargs from 'yargs';
 
 yargs.usage('multi-git <command> [options]')
     .command('status', 'Run git status for the selected project group')
@@ -27,7 +21,7 @@ yargs.usage('multi-git <command> [options]')
     .demand(1, 'must provide a valid command')
     .wrap(Math.min(120, yargs.terminalWidth()));
 
-function runCommand(manager, command) {
+export function runCommand(manager, command) {
     let argv = {};
 
     switch (command) {
@@ -134,7 +128,7 @@ function runCommand(manager, command) {
 
 // Commands
 
-function runStatus(manager, argv) {
+export function runStatus(manager, argv) {
     const {group: groupName} = argv;
 
     return manager
@@ -146,7 +140,7 @@ function runStatus(manager, argv) {
         .done();
 }
 
-function runFetch(manager, argv) {
+export function runFetch(manager, argv) {
     const {group: groupName} = argv;
     const scope = {};
 
@@ -163,7 +157,7 @@ function runFetch(manager, argv) {
         .done();
 }
 
-function runPull(manager, argv) {
+export function runPull(manager, argv) {
     const {group: groupName} = argv;
     const [, remoteName, branchName,] = _.get(argv, '_', []);
 
@@ -176,7 +170,7 @@ function runPull(manager, argv) {
         .done();
 }
 
-function runPush(manager, argv) {
+export function runPush(manager, argv) {
     const {group: groupName} = argv;
     const [, remoteName, branchName,] = _.get(argv, '_', []);
 
@@ -189,7 +183,7 @@ function runPush(manager, argv) {
         .done();
 }
 
-function runCheckout(manager, argv) {
+export function runCheckout(manager, argv) {
     const {group: groupName} = argv;
     const [, branchName] = _.get(argv, '_', []);
     const scope = {};
@@ -207,7 +201,7 @@ function runCheckout(manager, argv) {
         .done();
 }
 
-function runAdd(manager, argv) {
+export function runAdd(manager, argv) {
     const {group: groupName} = argv;
     const [, ...files] = _.get(argv, '_', []);
     const scope = {};
@@ -222,7 +216,7 @@ function runAdd(manager, argv) {
         .done();
 }
 
-function runUnstage(manager, argv) {
+export function runUnstage(manager, argv) {
     const {group: groupName} = argv;
     const [, ...files] = _.get(argv, '_', []);
     const scope = {};
@@ -237,7 +231,7 @@ function runUnstage(manager, argv) {
         .done();
 }
 
-function runStash(manager, argv) {
+export function runStash(manager, argv) {
     const {group: groupName} = argv;
     const [, ...command] = _.get(argv, '_', []);
     const scope = {};
@@ -254,7 +248,7 @@ function runStash(manager, argv) {
 
 // Output
 
-function logSimpleTable(result) {
+export function logSimpleTable(result) {
     if (_.isEmpty(result)) {
         return;
     }
@@ -283,7 +277,7 @@ function logSimpleTable(result) {
     console.log(table.toString());
 }
 
-function logPullTable(summaries) {
+export function logPullTable(summaries) {
     if (_.isEmpty(summaries)) {
         return;
     }
@@ -314,7 +308,7 @@ function logPullTable(summaries) {
     console.log(table.toString());
 }
 
-function logStatusTable(statutes) {
+export function logStatusTable(statutes) {
     if (_.isEmpty(statutes)) {
         return;
     }
@@ -347,18 +341,3 @@ function logStatusTable(statutes) {
 
     console.log(table.toString());
 }
-
-module.exports = {
-    runCommand,
-    runStatus,
-    runFetch,
-    runPull,
-    runPush,
-    runCheckout,
-    runAdd,
-    runUnstage,
-    runStash,
-    logSimpleTable,
-    logPullTable,
-    logStatusTable,
-};

@@ -1,11 +1,10 @@
-'use strict';
+import confirm from 'inquirer-confirm';
+import path from 'path';
 
-const confirm = require('inquirer-confirm');
-const path = require('path');
-const fs = require('./fs');
-const {ConfigFileName} = require('./manager');
+import fs from './fs';
+import {ConfigFileName} from './manager';
 
-class Valet {
+export default class Valet {
     static helpInstall() {
         const configFilePath = fs.expandHomeDir(path.join('~', ConfigFileName));
         return fs.statAsync(configFilePath)
@@ -28,5 +27,3 @@ class Valet {
             .done();
     }
 }
-
-module.exports = Valet;
