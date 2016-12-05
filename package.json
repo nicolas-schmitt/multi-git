@@ -11,9 +11,9 @@
   },
   "scripts": {
     "build": "babel src -d build -s",
-    "postinstall": "postinstall-build build \"npm run build && node npm-scripts.js install\"",
+    "watch": "npm run build -- -w",
+    "install": "npm run build && node npm-scripts.js install",
     "test": "mocha",
-    "watch": "babel src -d build -s -w",
     "lint": "eslint src bin"
   },
   "repository": {
@@ -30,20 +30,19 @@
     "service"
   ],
   "dependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-preset-env": "0.0.9",
     "bluebird": "^3.4.6",
     "bump-regex": "^2.3.0",
     "cli-table2": "^0.2.0",
     "colors": "^1.1.2",
     "inquirer-confirm": "^0.2.2",
     "lodash": "^4.16.4",
-    "postinstall-build": "^2.1.3",
     "simple-git": "^1.63.0",
     "source-map-support": "^0.4.6",
     "yargs": "^6.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-preset-env": "0.0.9",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-spies": "^0.7.1",
@@ -56,14 +55,7 @@
   },
   "babel": {
     "presets": [
-      [
-        "env",
-        {
-          "targets": {
-            "node": "current"
-          }
-        }
-      ]
+      ["env", {"targets": {"node": "current"}}]
     ]
   }
 }

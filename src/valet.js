@@ -2,11 +2,11 @@ import confirm from 'inquirer-confirm';
 import path from 'path';
 
 import fs from './fs';
-import {ConfigFileName} from './manager';
+import Manager from './manager';
 
 export default class Valet {
     static helpInstall() {
-        const configFilePath = fs.expandHomeDir(path.join('~', ConfigFileName));
+        const configFilePath = fs.expandHomeDir(path.join('~', Manager.ConfigFileName));
         return fs.statAsync(configFilePath)
             .catch((error) => {
                 if (error.code === 'ENOENT') {
@@ -16,7 +16,7 @@ export default class Valet {
                 }
             })
             .then(() => {
-                fs.createReadStream(path.join(__dirname, '../', ConfigFileName))
+                fs.createReadStream(path.join(__dirname, '../', Manager.ConfigFileName))
                 .pipe(fs.createWriteStream(configFilePath));
             })
             .catch((error) => {
