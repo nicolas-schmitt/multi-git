@@ -20,6 +20,10 @@
     "type": "git",
     "url": "https://github.com/nicolas-schmitt/multi-git.git"
   },
+  "bugs": {
+    "url": "https://github.com/nicolas-schmitt/multi-git/issues"
+  },
+  "homepage": "https://github.com/nicolas-schmitt/multi-git#multi-git",
   "author": "Nicolas Schmitt <https://github.com/nicolas-schmitt>",
   "license": "MIT",
   "keywords": [

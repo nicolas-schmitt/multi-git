@@ -1,7 +1,14 @@
-Multi Git
+Multi Git V2
 ========
 
 A Git command line to manage multiple git repositories at once.
+
+What's new ?
+-------------------------------------------------------------------
+* nodegit has been dropped in favor of simple-git. That way, you won't have to compile any dependency.
+* Most common git commands are now supported.
+* multi-git can be used from any directory, even if it's not listed in your configuration file.
+
 
 Intended use
 -------------------------------------------------------------------
