@@ -1,6 +1,6 @@
 {
   "name": "multi-git",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Handle multiple git repositories at once",
   "bin": {
     "multi-git": "./bin/multi-git.js"
@@ -59,7 +59,14 @@
   },
   "babel": {
     "presets": [
-      ["env", {"targets": {"node": "current"}}]
+      [
+        "env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
     ]
   }
 }
