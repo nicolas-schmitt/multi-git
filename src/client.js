@@ -4,129 +4,188 @@ import 'colors';
 import _ from 'lodash';
 import Table from 'cli-table2';
 import yargs from 'yargs';
+import Manager from './manager';
 
-yargs.usage('multi-git <command> [options]')
-    .command('status', 'Run git status for the selected project group')
-    .command('fetch', 'Run git fetch for the selected project group')
-    .command('pull', 'Pull the tracked branch <remote>/<branch> for each project within the group')
-    .command('push', 'Push the tracked branch <remote>/<branch> for each project within the group')
-    .command('checkout', 'Checkout the same branch for each project within the selected group')
-    .command('add', 'Stage one or more files for each project within the selected group')
-    .command('unstage', 'Unstage one or more files for each project within the selected group')
-    .command('stash', 'Stash changes on each project within the selected group')
-    .option('g', {
-        alias: 'group',
-        type: 'string',
-        describe: 'The project group name',
-        global: true
-    })
-    .demand(1, 'must provide a valid command')
-    .wrap(Math.min(120, yargs.terminalWidth()));
-
-export function runCommand(manager, command) {
-    let argv = {};
-
-    switch (command) {
-        case 'status':
-            argv = yargs.reset()
+const defaultCommandList = {
+    status: {
+        name: 'status',
+        description: 'Run git status for the selected project group',
+        prompt: () => {
+            return yargs.reset()
                 .usage('multi-git status [-g groupName]')
                 .help('h')
                 .alias('h', 'help')
                 .example('multi-git status -g tools', 'Show the status of the tools project group')
                 .argv;
-
-            runStatus(manager, argv);
-            break;
-
-        case 'fetch':
-            argv = yargs.reset()
+        },
+        handler: runStatus
+    },
+    fetch: {
+        name: 'fetch',
+        description: 'Run git fetch for the selected project group',
+        prompt: () => {
+            return yargs.reset()
                 .usage('multi-git fetch [-g groupName]')
                 .help('h')
                 .alias('h', 'help')
                 .example('multi-git fetch -g tools', 'Run git fetch on the tools project group')
                 .argv;
-
-            runFetch(manager, argv);
-            break;
-
-        case 'pull':
-            argv = yargs.reset()
+        },
+        handler: runFetch
+    },
+    pull: {
+        name: 'pull',
+        description: 'Pull the tracked branch <remote>/<branch> for each project within the group',
+        prompt: () => {
+            return yargs.reset()
                 .usage('multi-git pull [remote branch] [-g groupName]')
                 .help('h')
                 .alias('h', 'help')
                 .example('multi-git pull -g tools', 'Run git pull on the tools project group')
                 .example('multi-git pull origin master -g tools', 'Run git pull origin master on the tools project group')
                 .argv;
-
-            runPull(manager, argv);
-            break;
-
-        case 'push':
-            argv = yargs.reset()
+        },
+        handler: runPull
+    },
+    push: {
+        name: 'push',
+        description: 'Push the tracked branch <remote>/<branch> for each project within the group',
+        prompt: () => {
+            return yargs.reset()
                 .usage('multi-git push [remote branch] [-g groupName]')
                 .help('h')
                 .alias('h', 'help')
                 .example('multi-git push -g tools', 'Run git push on the tools project group')
                 .example('multi-git push origin master -g tools', 'Run git push origin master on the tools project group')
                 .argv;
-
-            runPush(manager, argv);
-            break;
-
-        case 'checkout':
-            argv = yargs.reset()
+        },
+        handler: runPush
+    },
+    checkout: {
+        name: 'checkout',
+        description: 'Checkout the same branch for each project within the selected group',
+        prompt: () => {
+            return yargs.reset()
                 .usage('multi-git checkout <what> [-g groupName]')
                 .demand(2, 'must provide a valid command')
                 .help('h')
                 .alias('h', 'help')
                 .example('multi-git checkout develop -g tools', 'Checkout the branch develop of the tools project group')
                 .argv;
-
-            runCheckout(manager, argv);
-            break;
-
-        case 'add':
-            argv = yargs.reset()
+        },
+        handler: runCheckout
+    },
+    add: {
+        name: 'add',
+        description: 'Stage one or more files for each project within the selected group',
+        prompt: () => {
+            return yargs.reset()
                 .usage('multi-git add <what> [-g groupName]')
                 .demand(2, 'must provide a valid command')
                 .help('h')
                 .alias('h', 'help')
                 .example('multi-git add axe.js -g tools', 'Stage axe.js for the tools project group')
                 .argv;
-
-            runAdd(manager, argv);
-            break;
-
-        case 'unstage':
-            argv = yargs.reset()
+        },
+        handler: runAdd
+    },
+    unstage: {
+        name: 'unstage',
+        description: 'Unstage one or more files for each project within the selected group',
+        prompt: () => {
+            return yargs.reset()
                 .usage('multi-git unstage <what> [-g groupName]')
                 .demand(2, 'must provide a valid command')
                 .help('h')
                 .alias('h', 'help')
                 .example('multi-git unstage axe.js -g tools', 'Unstage axe.js for the tools project group')
                 .argv;
-
-            runUnstage(manager, argv);
-            break;
-
-        case 'stash':
-            argv = yargs.reset()
+        },
+        handler: runUnstage
+    },
+    stash: {
+        name: 'stash',
+        description: 'Stash changes on each project within the selected group',
+        prompt: () => {
+            return yargs.reset()
                 .usage('multi-git stash [pop|drop|apply] [-g groupName]')
                 .demand(1, 'must provide a valid command')
                 .help('h')
                 .alias('h', 'help')
                 .example('multi-git stash -g tools', 'Stash staged changes for the tools project group')
                 .argv;
+        },
+        handler: runStash
+    },
+};
 
-            runStash(manager, argv);
-            break;
+/**
+ * Represents the multi-git client. Handles the prompt.
+ * @constructor
+ * @param {object} manager - a multi-git manager
+ */
+export class Client {
+    constructor(manager) {
+        this.commandList = defaultCommandList;
+        this.manager = manager || new Manager();
 
-        default:
+        yargs.usage('multi-git <command> [options]')
+            .option('g', {
+                alias: 'group',
+                type: 'string',
+                describe: 'The project group name',
+                global: true
+            })
+            .demand(1, 'must provide a valid command')
+            .wrap(Math.min(120, yargs.terminalWidth()));
+
+        this.loadCommandList();
+    }
+
+    /**
+     * Load the command list into yargs
+     */
+    loadCommandList() {
+        _.forEach(this.commandList, (command) => {
+            yargs.command(command.name, command.description);
+        });
+    }
+
+    /**
+     * Set a new command or update an existing one
+     * @param {string} name - the command name
+     * @param {string} description - the command description
+     * @param {function} prompt - a custom prompt for the command (ex -h)
+     * @param {function} handler - the command handler
+     */
+    setCommand(name, description, prompt, handler) {
+        yargs.command(name, description);
+        this.commandList[name] = {name, description, prompt, handler};
+    }
+
+    /**
+     * Parse the process argv and run a command accordingly
+     */
+    runPromptCommand() {
+        this.runCommand(_.get(yargs.argv, '_[0]', ''));
+    }
+
+    /**
+     * Run the requested command or show the help
+     * @param {string} name - the command name
+     */
+    runCommand(name) {
+        if (this.commandList[name]) {
+            const command = this.commandList[name];
+            const argv = command.prompt();
+            command.handler(this.manager, argv);
+        } else {
             yargs.showHelp();
-            break;
-
+        }
     }
 }
+
+export default Client;
 
 // Commands
 

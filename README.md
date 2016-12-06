@@ -1,4 +1,4 @@
-Multi Git V2
+Multi Git
 ========
 
 A Git command line to manage multiple git repositories at once.
