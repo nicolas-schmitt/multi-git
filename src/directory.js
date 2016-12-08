@@ -31,7 +31,7 @@ export default class Directory {
         } else if (arguments.length === 1 && _.isObject(arguments[0])) {
             this.path = fs.expandHomeDir(arguments[0].path);
             this.name = arguments[0].name || path.basename(this.path);
-        }else if (arguments.length === 2) {
+        } else if (arguments.length === 2) {
             this.path = fs.expandHomeDir(arguments[0]);
             this.name = arguments[1];
         }
@@ -354,14 +354,31 @@ export default class Directory {
             this.updatePackageFile('package.json', {version}),
             this.updatePackageFile('composer.json', {version})
         ])
-        .then(([presult, cresult]) => {
-            if (!presult.success && !cresult.success) {
-                if (presult.error.code === 'ENOENT' && cresult.error.code === 'ENOENT') {
-                    throw new NoPackageError();
-                } else if (presult.error.code === cresult.error.code) {
-                    throw presult.error;
+        .then((result) => {
+            const success = _.filter(result, {success: true});
+
+            if (_.isEmpty(success)) {
+                let code = _.get(result[0], 'error.code');
+                let count = _.reduce(result, (total, item) => {
+                    if (_.get(item, 'error.code') === code) {
+                        total++;
+                    }
+
+                    return total;
+                }, 0);
+
+                if (count === result.length) {
+                    if (code === 'ENOENT') {
+                        throw new NoPackageError();
+                    } else {
+                        throw result[0].error;
+                    }
+                } else {
+                    throw new Error();
                 }
             }
+
+            return _.map(success, 'filename');
         });
     }
 
@@ -552,8 +569,8 @@ export default class Directory {
      * @param {object} patch - what to update
      * @return {Promise}
      */
-    updatePackageFile(fileName, patch) {
-        const packagePath = path.join(this.path, fileName);
+    updatePackageFile(filename, patch) {
+        const packagePath = path.join(this.path, filename);
         return fs
             .readFileAsync(packagePath)
             .then((content) => {
@@ -562,10 +579,10 @@ export default class Directory {
                 return fs.writeFileAsync(packagePath, JSON.stringify(packageContent, null, 2));
             })
             .then(() => {
-                return {success: true};
+                return {filename, success: true};
             })
             .catch((error) => {
-                return {error};
+                return {filename, error};
             });
     }
 

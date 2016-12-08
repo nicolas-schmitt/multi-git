@@ -375,7 +375,7 @@ export default class Group {
         })
         .then((versions) => {
             versions.sort();
-            return versions[versions.length - 1];
+            return _.last(versions);
         });
     }
 
