@@ -1,8 +1,12 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
+import bumpVersion from 'bump-regex';
 
 import Directory from './directory';
-import {ActiveReleaseError} from './errors';
+import {ActiveReleaseError, InvalidVersionError} from './errors';
+
+const VersionRegexp = new RegExp('^\\d+\\.\\d+\\.\\d+(?:-\\w+(?:\\.\\d+)?)?$');
+const bumpVersionAsync = Promise.promisify(bumpVersion);
 
 /**
  * Represents a group of directories.
@@ -41,7 +45,7 @@ export default class Group {
     }
 
     /**
-     * Runs both git status & this.getVersion(),
+     * Runs both git status & member.getVersion(),
      * merges the result
      * @return {Promise}
      */
@@ -298,13 +302,6 @@ export default class Group {
                 })
                 .catch((error) => {
                     return {isRejected: true, parent: member, error};
-                })
-                .then((results) => {
-                    if (_.any(_.filter(results, 'isRejected'))) {
-                        throw new ActiveReleaseError();
-                    }
-
-                    return true;
                 });
         });
     }
@@ -317,6 +314,116 @@ export default class Group {
         return Promise.map(this.members, (member) => {
             return member
                 .pushAllDefaults()
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * Gets the status and throws errors if the repository is either dirty, ahead or behind its remote
+     * @return {Promise}
+     */
+    ensureCleanState() {
+        return Promise.map(this.members, (member) => {
+            return member
+                .ensureCleanState()
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Gets the group latest version
+     * @param {string} bump - the version bump, can be any valid semver
+     * @return {Promise}
+     */
+    getNextVersion(bump = 'patch') {
+        return this
+            .getLatestVersion()
+            .then((version) => {
+                if (VersionRegexp.test(bump)) {
+                    return bump;
+                } else if (_.isNil(bump) || _.indexOf(['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease'], bump) !== -1) {
+                    return bumpVersionAsync({str: `version: ${version}`, type: bump})
+                        .then((result) => {
+                            return result.new;
+                        })
+                        .catch((error) => {
+                            throw new InvalidVersionError(error);
+                        });
+                } else {
+                    throw new InvalidVersionError();
+                }
+            });
+    }
+
+    /**
+     * [git flow] Gets the group latest version
+     * @return {Promise}
+     */
+    getLatestVersion() {
+        return Promise.map(this.members, (member) => {
+            return member.getVersion();
+        })
+        .then((versions) => {
+            versions.sort();
+            return versions[versions.length - 1];
+        });
+    }
+
+    /**
+     * [git flow] Starts a new release
+     * @return {Promise}
+     */
+    startRelease(version) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .startRelease(version)
+                .then(() => {
+                    return member.checkout('-');
+                })
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Publishes the current release
+     * @return {Promise}
+     */
+    publishRelease() {
+        return Promise.map(this.members, (member) => {
+            return member
+                .publishRelease()
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });;
+        });
+    }
+
+    /**
+     * [git flow] Finishes the current release
+     * @return {Promise}
+     */
+    finishRelease() {
+        return Promise.map(this.members, (member) => {
+            return member
+                .finishRelease()
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })
