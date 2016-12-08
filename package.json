@@ -5,7 +5,7 @@
   "bin": {
     "multi-git": "./bin/multi-git.js"
   },
-  "main": "./src/lib.js",
+  "main": "./build/lib.js",
   "engines": {
     "node": "6.8.0"
   },
