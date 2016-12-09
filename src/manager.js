@@ -17,6 +17,10 @@ const ConfigFileName = '.mg-config.json';
  * Loads the configuration and the active group.
  */
 export default class Manager {
+    /**
+     * Gets multi-git configuration file name
+     * @return {string}
+     */
     static get ConfigFileName() {
         return ConfigFileName;
     }
@@ -98,7 +102,7 @@ export default class Manager {
     }
 
     /**
-     * Initialize the current group to the requested group.
+     * Initializes the current group to the requested group.
      * Defaults to the current working directory.
      * @param {string} groupName - the group name
      * @return {Promise}
