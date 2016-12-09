@@ -5,6 +5,10 @@ import fs from './fs';
 import Manager from './manager';
 
 export default class Valet {
+    /**
+     * post install command
+     * @return {Promise}
+     */
     static helpInstall() {
         const configFilePath = fs.expandHomeDir(path.join('~', Manager.ConfigFileName));
         return fs.statAsync(configFilePath)

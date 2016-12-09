@@ -1,11 +1,11 @@
 {
   "name": "multi-git",
-  "version": "2.0.1",
+  "version": "2.0.1-beta.0",
   "description": "Handle multiple git repositories at once",
   "bin": {
     "multi-git": "./bin/multi-git.js"
   },
-  "main": "./src/lib.js",
+  "main": "./build/lib.js",
   "engines": {
     "node": "6.8.0"
   },

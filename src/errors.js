@@ -61,3 +61,27 @@ export class ChainBreaker extends Error {
         this.code = 'chain-breaker';
     }
 }
+
+export class AheadRepositoryError extends Error {
+    constructor(message = 'The repository is ahead its remote') {
+        super(message);
+
+        this.code = 'ahead-repo';
+    }
+}
+
+export class BehindRepositoryError extends Error {
+    constructor(message = 'The repository is behind its remote') {
+        super(message);
+
+        this.code = 'behind-repo';
+    }
+}
+
+export class InvalidVersionError extends Error {
+    constructor(message = 'This isn\'t a valid version') {
+        super(message);
+
+        this.code = 'invalid-version';
+    }
+}

@@ -7,10 +7,12 @@ import SimpleGit from 'simple-git';
 import fs from './fs';
 import {
     ActiveReleaseError,
+    AheadRepositoryError,
+    BehindRepositoryError,
     DirtyRepositoryError,
     MultipleActiveReleaseError,
-    NoPackageError,
     NoActiveReleaseError,
+    NoPackageError,
 } from './errors';
 
 /**
@@ -29,7 +31,7 @@ export default class Directory {
         } else if (arguments.length === 1 && _.isObject(arguments[0])) {
             this.path = fs.expandHomeDir(arguments[0].path);
             this.name = arguments[0].name || path.basename(this.path);
-        }else if (arguments.length === 2) {
+        } else if (arguments.length === 2) {
             this.path = fs.expandHomeDir(arguments[0]);
             this.name = arguments[1];
         }
@@ -136,8 +138,41 @@ export default class Directory {
      * Runs git branch
      * @return {Promise}
      */
-    branch() {
-        return this.git.branchAsync();
+    branch(options = []) {
+        return this.git.branchAsync(options);
+    }
+
+    /**
+     * Runs git branch -vv
+     * @return {Promise}
+     */
+    branchVerbose() {
+        return Promise
+            .all([
+                this.config(),
+                this.branch(['-a', '-vv']),
+            ])
+            .then(([config, summary]) => {
+                const remotes = _.keys(config.remote);
+                const remoteReleaseBranchRegexp = new RegExp('^remotes\\/.+\\/(' + config.gitflow.prefix.release + '.+)$');
+
+                _.forEach(summary.branches, (branch) => {
+                    const {label} = branch;
+
+                    if (label.startsWith('[')) {
+                        branch.upstream = label.substring(1, label.indexOf(']'));
+                        branch.remote = branch.upstream.substring(0, branch.upstream.indexOf('/'));
+                        if (_.indexOf(remotes, branch.remote) === -1) {
+                            delete branch.remote;
+                        }
+                    } else if (remoteReleaseBranchRegexp.test(branch.name)) {
+                        branch.isRemoteRelease = true;
+                        branch.localName = remoteReleaseBranchRegexp.exec(branch.name)[1];
+                    }
+                });
+
+                return summary;
+            });
     }
 
     /**
@@ -146,7 +181,7 @@ export default class Directory {
      * @return {Promise}
      */
     deleteBranch(branchName) {
-        return this.git.deleteBranchAsync(branchName);
+        return this.git.deleteLocalBranchAsync(branchName);
     }
 
     /**
@@ -186,10 +221,10 @@ export default class Directory {
      * Runs git pull
      * @param {string} remoteName - the remote name to pull from
      * @param {string} branchName - the branch name to pull
-     * @param {array} options - a string array of git pull options
+     * @param {Array} options - a string array of git pull options
      * @return {Promise}
      */
-    pull(remoteName, branchName, options) {
+    pull(remoteName, branchName, options = []) {
         return this.git
             .pullAsync(remoteName, branchName, options)
             .then((summary) => {
@@ -202,10 +237,10 @@ export default class Directory {
      * Runs git merge
      * @param {string} from - where to merge from (commit hash, branch name)
      * @param {string} to - where to merge to (commit hash, branch name)
-     * @param {array} options - a string array of git merge options
+     * @param {Array} options - a string array of git merge options
      * @return {Promise}
      */
-    mergeFromTo(from, to, options) {
+    mergeFromTo(from, to, options = []) {
         return this.git.mergeFromToAsync(from, to, options);
     }
 
@@ -221,7 +256,7 @@ export default class Directory {
 
     /**
      * Stages files
-     * @param {array} files - the files to stage
+     * @param {Array} files - the files to stage
      * @return {Promise}
      */
     addFiles(files) {
@@ -230,19 +265,19 @@ export default class Directory {
 
     /**
      * Resets the repository
-     * @param {array} options - array of options supported by the git reset command
+     * @param {Array} options - array of options supported by the git reset command
      * @return {Promise}
      */
-    reset(options) {
+    reset(options = []) {
         return this.git.resetAsync(options);
     }
 
     /**
      * Stash the working directory
-     * @param {array} options - array of options supported by the git stash command
+     * @param {Array} options - array of options supported by the git stash command
      * @return {Promise}
      */
-    stash(options) {
+    stash(options = []) {
         return this.git.stashAsync(options);
     }
 
@@ -254,7 +289,7 @@ export default class Directory {
      */
     config() {
         if (this._config) {
-            return Promise.resolve(this.config);
+            return Promise.resolve(this._config);
         } else {
             return this.git
                 .runAsync(['config', '--list'])
@@ -301,7 +336,7 @@ export default class Directory {
         ], 1)
         .then((result) => {
             const module = JSON.parse(result.toString());
-            return module.version;
+            return module.version || '-';
         })
         .catch(() => {
             return '-';
@@ -319,14 +354,31 @@ export default class Directory {
             this.updatePackageFile('package.json', {version}),
             this.updatePackageFile('composer.json', {version})
         ])
-        .then(([presult, cresult]) => {
-            if (!presult.success && !cresult.success) {
-                if (presult.error.code === 'ENOENT' && cresult.error.code === 'ENOENT') {
-                    throw new NoPackageError();
-                } else if (presult.error.code === cresult.error.code) {
-                    throw presult.error;
+        .then((result) => {
+            const success = _.filter(result, {success: true});
+
+            if (_.isEmpty(success)) {
+                let code = _.get(result[0], 'error.code');
+                let count = _.reduce(result, (total, item) => {
+                    if (_.get(item, 'error.code') === code) {
+                        total++;
+                    }
+
+                    return total;
+                }, 0);
+
+                if (count === result.length) {
+                    if (code === 'ENOENT') {
+                        throw new NoPackageError();
+                    } else {
+                        throw result[0].error;
+                    }
+                } else {
+                    throw new Error();
                 }
             }
+
+            return _.map(success, 'filename');
         });
     }
 
@@ -338,7 +390,7 @@ export default class Directory {
         return Promise
             .all([
                 this.config(),
-                this.status(),
+                this.detailedStatus(),
             ])
             .then(([config, {editCount}]) => {
                 if (editCount > 0) {
@@ -359,7 +411,7 @@ export default class Directory {
         return Promise
             .all([
                 this.config(),
-                this.branch(),
+                this.branchVerbose(),
             ])
             .then(([config, summary]) => {
                 const prefix = config.gitflow.prefix.release;
@@ -373,16 +425,13 @@ export default class Directory {
                     return branches;
                 }
 
-                const remoteReleaseBranchRegexp = new RegExp('^remotes\\/.+\\/(' + prefix + '.+)$');
                 branches = _.find(summary.branches, (branch) => {
-                    return remoteReleaseBranchRegexp.test(branch.name);
+                    return branch.isRemoteRelease;
                 });
 
                 if (_.isArray(branches) && _.size(branches) > 1) {
                     throw new MultipleActiveReleaseError();
                 } else if (_.isObject(branches)) {
-                    branches.isRemote = true;
-                    branches.localName = remoteReleaseBranchRegexp.exec(branches.name)[1];
                     return branches;
                 } else {
                     throw new NoActiveReleaseError();
@@ -398,17 +447,17 @@ export default class Directory {
         return this.getReleaseBranch()
             .catch((error) => {
                 if (error instanceof NoActiveReleaseError) {
-                    return true;
+                    return false;
                 } else {
                     throw error;
                 }
             })
             .then((result) => {
-                if (!result) {
+                if (result) {
                     throw new ActiveReleaseError();
                 }
 
-                return result;
+                return !result;
             });
     }
 
@@ -433,29 +482,34 @@ export default class Directory {
 
         return this
             .config()
-            .then(() => {
-                scope.master = scope.config.gitflow.branch.master;
-                scope.develop = scope.config.gitflow.branch.develop;
+            .then((config) => {
+                scope.master = config.gitflow.branch.master;
+                scope.develop = config.gitflow.branch.develop;
+                scope.prefix = config.gitflow.prefix.release;
+                return this.getReleaseBranch();
             })
-            .getReleaseBranch()
             .then((branch) => {
                 scope.release = branch.name;
+                scope.remote = branch.remote || 'origin';
+
                 if (!branch.curent) {
-                    if (branch.isRemote) {
+                    if (branch.isRemoteRelease) {
                         scope.release = branch.localName;
                     }
+
+                    scope.version = scope.release.substr(scope.prefix.length);
 
                     return this.checkout(scope.release);
                 }
             })
             .then(() => {
-                return this.pull('origin', scope.release);
+                return this.pull(scope.remote, scope.release);
             })
             .then(() => {
-                return this.checkout('origin', scope.master);
+                return this.checkout(scope.master);
             })
             .then(() => {
-                return this.pull('origin', scope.master);
+                return this.pull(scope.remote, scope.master);
             })
             .then(() => {
                 return this.mergeFromTo(scope.release, scope.master);
@@ -464,13 +518,22 @@ export default class Directory {
                 return this.tag(scope.version, 'Finish ' + scope.version);
             })
             .then(() => {
-                return this.checkout('origin', scope.develop);
+                return this.checkout(scope.develop);
             })
             .then(() => {
-                return this.pull('origin', scope.develop);
+                return this.pull(scope.remote, scope.develop);
             })
             .then(() => {
                 return this.mergeFromTo(scope.version, scope.develop);
+            })
+            .then(() => {
+                return this.pushAllDefaults();
+            })
+            .then(() => {
+                return this.deleteBranch(scope.release);
+            })
+            .then(() => {
+                return this.push(scope.remote, ':' + scope.release);
             });
     }
 
@@ -506,8 +569,8 @@ export default class Directory {
      * @param {object} patch - what to update
      * @return {Promise}
      */
-    updatePackageFile(fileName, patch) {
-        const packagePath = path.join(this.path, fileName);
+    updatePackageFile(filename, patch) {
+        const packagePath = path.join(this.path, filename);
         return fs
             .readFileAsync(packagePath)
             .then((content) => {
@@ -516,10 +579,30 @@ export default class Directory {
                 return fs.writeFileAsync(packagePath, JSON.stringify(packageContent, null, 2));
             })
             .then(() => {
-                return {success: true};
+                return {filename, success: true};
             })
             .catch((error) => {
-                return {error};
+                return {filename, error};
+            });
+    }
+
+    /**
+     * Gets the status and throws errors if the repository is either dirty, ahead or behind its remote
+     * @return {Promise}
+     */
+    ensureCleanState() {
+        return this
+            .detailedStatus()
+            .then((status) => {
+                if (status.editCount !== 0) {
+                    throw new DirtyRepositoryError();
+                } else if (status.ahead !== 0) {
+                    throw new AheadRepositoryError();
+                } else if (status.behind !== 0) {
+                    throw new BehindRepositoryError();
+                }
+
+                return true;
             });
     }
 }
