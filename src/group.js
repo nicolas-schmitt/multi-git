@@ -3,7 +3,7 @@ import Promise from 'bluebird';
 import bumpVersion from 'bump-regex';
 
 import Directory from './directory';
-import {ActiveReleaseError, InvalidVersionError} from './errors';
+import {InvalidVersionError} from './errors';
 
 const VersionRegexp = new RegExp('^\\d+\\.\\d+\\.\\d+(?:-\\w+(?:\\.\\d+)?)?$');
 const bumpVersionAsync = Promise.promisify(bumpVersion);
@@ -189,7 +189,7 @@ export default class Group {
      * Runs git pull
      * @param {string} remoteName - the remote name to pull from
      * @param {string} branchName - the branch name to pull
-     * @param {array} options - a string array of git pull options
+     * @param {Array} options - a string array of git pull options
      * @return {Promise}
      */
     pull(remoteName, branchName, options) {
@@ -206,7 +206,7 @@ export default class Group {
      * Runs git merge
      * @param {string} from - where to merge from (commit hash, branch name)
      * @param {string} to - where to merge to (commit hash, branch name)
-     * @param {array} options - a string array of git merge options
+     * @param {Array} options - a string array of git merge options
      * @return {Promise}
      */
     mergeFromTo(from, to, options) {
@@ -237,7 +237,7 @@ export default class Group {
 
     /**
      * Stages files
-     * @param {array} files - the files to stage
+     * @param {Array} files - the files to stage
      * @return {Promise}
      */
     addFiles(files) {
@@ -255,7 +255,7 @@ export default class Group {
 
     /**
      * Unstages files
-     * @param {array} files - the files to stage
+     * @param {Array} files - the files to stage
      * @return {Promise}
      */
     unstageFiles(files) {
@@ -273,7 +273,7 @@ export default class Group {
 
     /**
      * Stash the working directory
-     * @param {array} options - array of options supported by the git stash command
+     * @param {Array} options - array of options supported by the git stash command
      * @return {Promise}
      */
     stash(options) {
@@ -412,7 +412,7 @@ export default class Group {
                 })
                 .catch((error) => {
                     return {isRejected: true, parent: member, error};
-                });;
+                });
         });
     }
 

@@ -32,7 +32,7 @@ export default class Client {
     }
 
     /**
-     * Load the command list into yargs
+     * Loads the command list into yargs
      */
     loadCommandList() {
         _.forEach(this.commandList, (command) => {
@@ -41,7 +41,7 @@ export default class Client {
     }
 
     /**
-     * Set a new command or update an existing one
+     * Sets a new command or update an existing one
      * @param {string} name - the command name
      * @param {string} description - the command description
      * @param {function} prompt - a custom prompt for the command (ex -h)
@@ -53,8 +53,8 @@ export default class Client {
     }
 
     /**
-     * Set or update multiple commands
-     * @param {array} commands - an array of command
+     * Sets or updates multiple commands
+     * @param {Array} commands - an array of command
      */
     setCommands(commands) {
         _.forEach(commands, (command) => {
@@ -63,14 +63,14 @@ export default class Client {
     }
 
     /**
-     * Parse the process argv and run a command accordingly
+     * Parses the process argv and run a command accordingly
      */
     runPromptCommand() {
         this.runCommand(_.get(yargs.argv, '_[0]', ''));
     }
 
     /**
-     * Run the requested command or show the help
+     * Runs the requested command or show the help
      * @param {string} name - the command name
      */
     runCommand(name) {
@@ -84,6 +84,12 @@ export default class Client {
     }
 
     //region Command handlers
+    /**
+     * status command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
     static runStatus(manager, argv) {
         const {group: groupName} = argv;
 
@@ -96,6 +102,12 @@ export default class Client {
             .done();
     }
 
+    /**
+     * fetch command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
     static runFetch(manager, argv) {
         const {group: groupName} = argv;
         const scope = {};
@@ -113,6 +125,12 @@ export default class Client {
             .done();
     }
 
+    /**
+     * pull command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
     static runPull(manager, argv) {
         const {group: groupName} = argv;
         const [, remoteName, branchName,] = _.get(argv, '_', []);
@@ -126,6 +144,12 @@ export default class Client {
             .done();
     }
 
+    /**
+     * push command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
     static runPush(manager, argv) {
         const {group: groupName} = argv;
         const [, remoteName, branchName,] = _.get(argv, '_', []);
@@ -139,6 +163,12 @@ export default class Client {
             .done();
     }
 
+    /**
+     * checkout command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
     static runCheckout(manager, argv) {
         const {group: groupName} = argv;
         const [, branchName] = _.get(argv, '_', []);
@@ -157,6 +187,12 @@ export default class Client {
             .done();
     }
 
+    /**
+     * add command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
     static runAdd(manager, argv) {
         const {group: groupName} = argv;
         const [, ...files] = _.get(argv, '_', []);
@@ -172,6 +208,12 @@ export default class Client {
             .done();
     }
 
+    /**
+     * unstage command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
     static runUnstage(manager, argv) {
         const {group: groupName} = argv;
         const [, ...files] = _.get(argv, '_', []);
@@ -187,6 +229,12 @@ export default class Client {
             .done();
     }
 
+    /**
+     * stash command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
     static runStash(manager, argv) {
         const {group: groupName} = argv;
         const [, ...command] = _.get(argv, '_', []);
@@ -204,6 +252,11 @@ export default class Client {
     //endregion
 
     //region Output
+    /**
+     * logs a table with 2 columns: project & result ;
+     * suitable for logging a success / failure by project
+     * @param {Array} result - a command result array
+     */
     static logSimpleTable(result) {
         if (_.isEmpty(result)) {
             return;
@@ -233,6 +286,11 @@ export default class Client {
         console.log(table.toString());
     }
 
+    /**
+     * logs a table with 4 columns: project, changes, insertions & deletions ;
+     * suitable a for logging a pull result
+     * @param {Array} result - a pull command result array
+     */
     static logPullTable(summaries) {
         if (_.isEmpty(summaries)) {
             return;
@@ -264,6 +322,11 @@ export default class Client {
         console.log(table.toString());
     }
 
+    /**
+     * logs a table with 7 columns: project, version, status, branch, upstream, ahead & behind ;
+     * suitable a for logging a status result
+     * @param {Array} result - a status command result array
+     */
     static logStatusTable(statutes) {
         if (_.isEmpty(statutes)) {
             return;
