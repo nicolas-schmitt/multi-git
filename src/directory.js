@@ -10,6 +10,7 @@ import {
     AheadRepositoryError,
     BehindRepositoryError,
     DirtyRepositoryError,
+    InvalidFeatureBranchError,
     MultipleActiveReleaseError,
     NoActiveReleaseError,
     NoPackageError,
@@ -383,10 +384,105 @@ export default class Directory {
     }
 
     /**
-     * [git flow] Starts a new release
+     * [git flow] Starts a new feature
+     * @param {string} name - the relase name
      * @return {Promise}
      */
-    startRelease(name) {
+    featureStart(name) {
+        const scope = {};
+        return Promise
+            .all([
+                this.config(),
+                this.detailedStatus(),
+            ])
+            .then(([config, {editCount}]) => {
+                if (editCount > 0) {
+                    throw new DirtyRepositoryError();
+                }
+
+                scope.feature = config.gitflow.prefix.feature + name;
+                const startPoint = config.gitflow.branch.develop;
+                return this.createBranch(scope.feature, startPoint);
+            })
+            .then(() => {
+                return this.checkout(scope.feature);
+            });
+    }
+
+    /**
+     * [git flow] Publishes the current release
+     * @param {string} name - the feature name
+     * @return {Promise}
+     */
+    featurePublish(name) {
+        return this
+            .all([
+                this.config(),
+                this.status()
+            ])
+            .then(([config, status]) => {
+                let feature;
+                const prefix = config.gitflow.prefix.feature;
+
+                if (name) {
+                    feature = prefix + name;
+                } else if (status.current.startsWith(prefix)) {
+                    feature = config.current;
+                } else {
+                    throw new InvalidFeatureBranchError();
+                }
+
+                const remote = this.getDefaultRemote(config);
+                return this.push(remote, feature);
+            });
+    }
+
+    /**
+     * [git flow] Finishes the current release
+     * @param {string} name - the feature name
+     * @return {Promise}
+     */
+    featureFinish(name) {
+        const scope = {};
+
+        return this
+            .all([
+                this.config(),
+                this.status()
+            ])
+            .then(([config, status]) => {
+                const prefix = config.gitflow.prefix.feature;
+
+                if (name) {
+                    scope.feature = prefix + name;
+                } else if (status.current.startsWith(prefix)) {
+                    scope.feature = config.current;
+                } else {
+                    throw new InvalidFeatureBranchError();
+                }
+
+                scope.develop = config.gitflow.branch.develop;
+                scope.developRemote = config.branch[scope.develop].remote;
+                scope.defaultRemote = this.getDefaultRemote(config);
+                return this.checkout(scope.develop);
+            })
+            .then(() => {
+                return this.pull(scope.developRemote, scope.develop)
+            })
+            .then(() => {
+                return this.mergeFromTo(scope.feature, scope.develop);
+            })
+            .then(() => {
+                return this.deleteBranch(scope.feature);
+            });
+    }
+
+    /**
+     * [git flow] Starts a new release
+     * @param {string} name - the relase name
+     * @return {Promise}
+     */
+    releaseStart(name) {
         return Promise
             .all([
                 this.config(),
@@ -465,11 +561,15 @@ export default class Directory {
      * [git flow] Publishes the current release
      * @return {Promise}
      */
-    publishRelease() {
-        return this
-            .getReleaseBranch()
-            .then((branch) => {
-                return this.push('origin', branch.name);
+    releasePublish() {
+        return Promise
+            .all([
+                this.config(),
+                this.getReleaseBranch(),
+            ])
+            .then(([config, branch]) => {
+                const remote = this.getDefaultRemote(config);
+                return this.push(remote, branch.name);
             });
     }
 
@@ -477,7 +577,7 @@ export default class Directory {
      * [git flow] Finishes the current release
      * @return {Promise}
      */
-    finishRelease() {
+    releaseFinish() {
         const scope = {};
 
         return this
@@ -486,11 +586,12 @@ export default class Directory {
                 scope.master = config.gitflow.branch.master;
                 scope.develop = config.gitflow.branch.develop;
                 scope.prefix = config.gitflow.prefix.release;
+                scope.defaultRemote = this.getDefaultRemote(config);
                 return this.getReleaseBranch();
             })
             .then((branch) => {
                 scope.release = branch.name;
-                scope.remote = branch.remote || 'origin';
+                scope.remote = branch.remote || scope.defaultRemote;
 
                 if (!branch.curent) {
                     if (branch.isRemoteRelease) {
@@ -604,5 +705,14 @@ export default class Directory {
 
                 return true;
             });
+    }
+
+    /**
+     * Gets the remote associated to the git flow master branch
+     * @param {object} config - a git config object
+     * @return {string}
+     */
+    getDefaultRemote(config) {
+        return config.branch[config.gitflow.branch.master].remote;
     }
 }

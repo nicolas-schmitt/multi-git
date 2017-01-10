@@ -380,13 +380,67 @@ export default class Group {
     }
 
     /**
+     * [git flow] Starts a new feature
+     * @return {Promise}
+     */
+    featureStart(version) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .featureStart(version)
+                .then(() => {
+                    return member.checkout('-');
+                })
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Publishes the current feature
+     * @return {Promise}
+     */
+    featurePublish() {
+        return Promise.map(this.members, (member) => {
+            return member
+                .featurePublish()
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Finishes the current feature
+     * @return {Promise}
+     */
+    featureFinish() {
+        return Promise.map(this.members, (member) => {
+            return member
+                .featureFinish()
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
      * [git flow] Starts a new release
      * @return {Promise}
      */
-    startRelease(version) {
+    releaseStart(version) {
         return Promise.map(this.members, (member) => {
             return member
-                .startRelease(version)
+                .releaseStart(version)
                 .then(() => {
                     return member.checkout('-');
                 })
@@ -403,10 +457,10 @@ export default class Group {
      * [git flow] Publishes the current release
      * @return {Promise}
      */
-    publishRelease() {
+    releasePublish() {
         return Promise.map(this.members, (member) => {
             return member
-                .publishRelease()
+                .releasePublish()
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })
@@ -420,10 +474,10 @@ export default class Group {
      * [git flow] Finishes the current release
      * @return {Promise}
      */
-    finishRelease() {
+    releaseFinish() {
         return Promise.map(this.members, (member) => {
             return member
-                .finishRelease()
+                .releaseFinish()
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })

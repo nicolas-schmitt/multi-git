@@ -99,6 +99,8 @@ Commands:
   add       Stage one or more files for each project within the selected group
   unstage   Unstage one or more files for each project within the selected group
   stash     Stash changes on each project within the selected group
+  feature   [git-flow] Create a new feature for the selected group
+  release   [git-flow] Create a new version for the selected group
 
 Options:
   -g, --group  The project group name

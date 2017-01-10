@@ -85,3 +85,11 @@ export class InvalidVersionError extends Error {
         this.code = 'invalid-version';
     }
 }
+
+export class InvalidFeatureBranchError extends Error {
+    constructor(message = 'The current branch isn\'t a feature') {
+        super(message);
+
+        this.code = 'invalid-feature';
+    }
+}
