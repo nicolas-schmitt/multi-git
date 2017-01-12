@@ -381,15 +381,14 @@ export default class Group {
 
     /**
      * [git flow] Starts a new feature
+     * @param {string} name - the feature name
+     * @param {string} base - an optional base for the feature, instead of develop
      * @return {Promise}
      */
-    featureStart(version) {
+    featureStart(name, base) {
         return Promise.map(this.members, (member) => {
             return member
-                .featureStart(version)
-                .then(() => {
-                    return member.checkout('-');
-                })
+                .featureStart(name, base)
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })
@@ -401,12 +400,13 @@ export default class Group {
 
     /**
      * [git flow] Publishes the current feature
+     * @param {string} name - the feature name
      * @return {Promise}
      */
-    featurePublish() {
+    featurePublish(name) {
         return Promise.map(this.members, (member) => {
             return member
-                .featurePublish()
+                .featurePublish(name)
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })
@@ -418,12 +418,13 @@ export default class Group {
 
     /**
      * [git flow] Finishes the current feature
+     * @param {string} name - the feature name
      * @return {Promise}
      */
-    featureFinish() {
+    featureFinish(name) {
         return Promise.map(this.members, (member) => {
             return member
-                .featureFinish()
+                .featureFinish(name)
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })
@@ -435,15 +436,13 @@ export default class Group {
 
     /**
      * [git flow] Starts a new release
+     * @param {string} name - the release name
      * @return {Promise}
      */
-    releaseStart(version) {
+    releaseStart(name) {
         return Promise.map(this.members, (member) => {
             return member
-                .releaseStart(version)
-                .then(() => {
-                    return member.checkout('-');
-                })
+                .releaseStart(name)
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })
@@ -455,12 +454,13 @@ export default class Group {
 
     /**
      * [git flow] Publishes the current release
+     * @param {string} name - the release name
      * @return {Promise}
      */
-    releasePublish() {
+    releasePublish(name) {
         return Promise.map(this.members, (member) => {
             return member
-                .releasePublish()
+                .releasePublish(name)
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })
@@ -472,12 +472,13 @@ export default class Group {
 
     /**
      * [git flow] Finishes the current release
+     * @param {string} name - the release name
      * @return {Promise}
      */
-    releaseFinish() {
+    releaseFinish(name) {
         return Promise.map(this.members, (member) => {
             return member
-                .releaseFinish()
+                .releaseFinish(name)
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })

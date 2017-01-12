@@ -10,7 +10,6 @@ import {
     AheadRepositoryError,
     BehindRepositoryError,
     DirtyRepositoryError,
-    InvalidFeatureBranchError,
     MultipleActiveReleaseError,
     NoActiveReleaseError,
     NoPackageError,
@@ -60,7 +59,6 @@ export default class Directory {
             return Promise.resolve(() => { return this._hasGit; });
         }
     }
-
 
     /**
      * Initializes local git client.
@@ -386,27 +384,20 @@ export default class Directory {
     /**
      * [git flow] Starts a new feature
      * @param {string} name - the relase name
+     * @param {string} base - an optional base for the feature, instead of develop
      * @return {Promise}
      */
-    featureStart(name) {
-        const scope = {};
-        return Promise
-            .all([
-                this.config(),
-                this.detailedStatus(),
-            ])
-            .then(([config, {editCount}]) => {
-                if (editCount > 0) {
-                    throw new DirtyRepositoryError();
-                }
+    featureStart(name, base) {
+        const args = ['flow', 'feature', 'start'];
+        if (name) {
+            args.push(name);
 
-                scope.feature = config.gitflow.prefix.feature + name;
-                const startPoint = config.gitflow.branch.develop;
-                return this.createBranch(scope.feature, startPoint);
-            })
-            .then(() => {
-                return this.checkout(scope.feature);
-            });
+            if (base) {
+                args.push(base);
+            }
+        }
+
+        return this.git.rawAsync(args);
     }
 
     /**
@@ -415,26 +406,12 @@ export default class Directory {
      * @return {Promise}
      */
     featurePublish(name) {
-        return this
-            .all([
-                this.config(),
-                this.status()
-            ])
-            .then(([config, status]) => {
-                let feature;
-                const prefix = config.gitflow.prefix.feature;
+        const args = ['flow', 'feature', 'publish'];
+        if (name) {
+            args.push(name);
+        }
 
-                if (name) {
-                    feature = prefix + name;
-                } else if (status.current.startsWith(prefix)) {
-                    feature = config.current;
-                } else {
-                    throw new InvalidFeatureBranchError();
-                }
-
-                const remote = this.getDefaultRemote(config);
-                return this.push(remote, feature);
-            });
+        return this.git.rawAsync(args);
     }
 
     /**
@@ -443,38 +420,12 @@ export default class Directory {
      * @return {Promise}
      */
     featureFinish(name) {
-        const scope = {};
+        const args = ['flow', 'feature', 'finish'];
+        if (name) {
+            args.push(name);
+        }
 
-        return this
-            .all([
-                this.config(),
-                this.status()
-            ])
-            .then(([config, status]) => {
-                const prefix = config.gitflow.prefix.feature;
-
-                if (name) {
-                    scope.feature = prefix + name;
-                } else if (status.current.startsWith(prefix)) {
-                    scope.feature = config.current;
-                } else {
-                    throw new InvalidFeatureBranchError();
-                }
-
-                scope.develop = config.gitflow.branch.develop;
-                scope.developRemote = config.branch[scope.develop].remote;
-                scope.defaultRemote = this.getDefaultRemote(config);
-                return this.checkout(scope.develop);
-            })
-            .then(() => {
-                return this.pull(scope.developRemote, scope.develop)
-            })
-            .then(() => {
-                return this.mergeFromTo(scope.feature, scope.develop);
-            })
-            .then(() => {
-                return this.deleteBranch(scope.feature);
-            });
+        return this.git.rawAsync(args);
     }
 
     /**
@@ -483,20 +434,87 @@ export default class Directory {
      * @return {Promise}
      */
     releaseStart(name) {
-        return Promise
-            .all([
-                this.config(),
-                this.detailedStatus(),
-            ])
-            .then(([config, {editCount}]) => {
-                if (editCount > 0) {
-                    throw new DirtyRepositoryError();
-                }
+        const args = ['flow', 'release', 'start'];
+        if (name) {
+            args.push(name);
+        }
 
-                const branchName = config.gitflow.prefix.release + name;
-                const startPoint = config.gitflow.branch.develop;
-                return this.createBranch(branchName, startPoint);
-            });
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Publishes the current release
+     * @param {string} name - the release name
+     * @return {Promise}s
+     */
+    releasePublish(name) {
+        const args = ['flow', 'release', 'publish'];
+        if (name) {
+            args.push(name);
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Finishes the current release
+     * @param {string} name - the release name
+     * @return {Promise}
+     */
+    releaseFinish(name) {
+        const args = ['flow', 'release', 'finish'];
+        if (name) {
+            args.push(name);
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Starts a new release
+     * @param {string} name - the hotfix name
+     * @param {string} base - an optional base for the release, instead of develop
+     * @return {Promise}
+     */
+    hotfixStart(name, base) {
+        const args = ['flow', 'hotfix', 'start'];
+        if (name) {
+            args.push(name);
+
+            if (base) {
+                args.push(base);
+            }
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Publishes the current hotfix
+     * @param {string} name - the hotfix name
+     * @return {Promise}s
+     */
+    hotfixPublish(name) {
+        const args = ['flow', 'hotfix', 'publish'];
+        if (name) {
+            args.push(name);
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Finishes the current hotfix
+     * @param {string} name - the hotfix name
+     * @return {Promise}
+     */
+    hotfixFinish(name) {
+        const args = ['flow', 'hotfix', 'finish'];
+        if (name) {
+            args.push(name);
+        }
+
+        return this.git.rawAsync(args);
     }
 
     /**
@@ -554,87 +572,6 @@ export default class Directory {
                 }
 
                 return !result;
-            });
-    }
-
-    /**
-     * [git flow] Publishes the current release
-     * @return {Promise}
-     */
-    releasePublish() {
-        return Promise
-            .all([
-                this.config(),
-                this.getReleaseBranch(),
-            ])
-            .then(([config, branch]) => {
-                const remote = this.getDefaultRemote(config);
-                return this.push(remote, branch.name);
-            });
-    }
-
-    /**
-     * [git flow] Finishes the current release
-     * @return {Promise}
-     */
-    releaseFinish() {
-        const scope = {};
-
-        return this
-            .config()
-            .then((config) => {
-                scope.master = config.gitflow.branch.master;
-                scope.develop = config.gitflow.branch.develop;
-                scope.prefix = config.gitflow.prefix.release;
-                scope.defaultRemote = this.getDefaultRemote(config);
-                return this.getReleaseBranch();
-            })
-            .then((branch) => {
-                scope.release = branch.name;
-                scope.remote = branch.remote || scope.defaultRemote;
-
-                if (!branch.curent) {
-                    if (branch.isRemoteRelease) {
-                        scope.release = branch.localName;
-                    }
-
-                    scope.version = scope.release.substr(scope.prefix.length);
-
-                    return this.checkout(scope.release);
-                }
-            })
-            .then(() => {
-                return this.pull(scope.remote, scope.release);
-            })
-            .then(() => {
-                return this.checkout(scope.master);
-            })
-            .then(() => {
-                return this.pull(scope.remote, scope.master);
-            })
-            .then(() => {
-                return this.mergeFromTo(scope.release, scope.master);
-            })
-            .then(() => {
-                return this.tag(scope.version, 'Finish ' + scope.version);
-            })
-            .then(() => {
-                return this.checkout(scope.develop);
-            })
-            .then(() => {
-                return this.pull(scope.remote, scope.develop);
-            })
-            .then(() => {
-                return this.mergeFromTo(scope.version, scope.develop);
-            })
-            .then(() => {
-                return this.pushAllDefaults();
-            })
-            .then(() => {
-                return this.deleteBranch(scope.release);
-            })
-            .then(() => {
-                return this.push(scope.remote, ':' + scope.release);
             });
     }
 

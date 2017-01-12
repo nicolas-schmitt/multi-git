@@ -52,8 +52,6 @@ export default class Client {
      * Adds all commands from this.commands to yargs
      */
     loadCommands() {
-        const manager = this.manager;
-
         _.forEach(this.commands, (command) => {
             if (_.isFunction(command.handler)) {
                 command.handler = command.handler.bind(null, this.manager);
@@ -247,12 +245,12 @@ export default class Client {
      */
     static runFeature(manager, argv) {
         const {group: groupName} = argv;
-        const [, action, featureName] = _.get(argv, '_', []);
+        const [, action, featureName, base] = _.get(argv, '_', []);
 
         let result;
         switch (action) {
             case 'start':
-                result = Client.featureStart(manager, groupName, featureName);
+                result = Client.featureStart(manager, groupName, featureName, base);
                 break;
             case 'publish':
                 result = Client.featurePublish(manager, groupName, featureName);
@@ -273,9 +271,10 @@ export default class Client {
      * @param {Manager} manager - multi-git manager
      * @param {string} groupName - the group name
      * @param {string} featureName - the feature name
+     * @param {string} base - an optional base for the feature, instead of develop
      * @return {Promise}
      */
-    static featureStart(manager, groupName, featureName) {
+    static featureStart(manager, groupName, featureName, base) {
         const scope = {};
 
         return manager
@@ -285,7 +284,7 @@ export default class Client {
                 return group.fetch();
             })
             .then(() => {
-                return scope.group.featureStart(featureName);
+                return scope.group.featureStart(featureName, base);
             })
             .then((result) => {
                 Client.logSimpleTable(result);
@@ -707,7 +706,7 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(2, 'must provide a valid git ref to checkout')
+                .demand(1, 'must provide a valid git ref to checkout')
                 .usage(`${cmdName} checkout <what> [-g group_name]`)
                 .example(`${cmdName} checkout develop -g tools`, 'Checkout the branch develop of the tools project group')
                 .argv;
@@ -723,7 +722,7 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(2, 'must provide a valid file path to add')
+                .demand(1, 'must provide a valid file path to add')
                 .usage(`${cmdName} add <what> [-g group_name]`)
                 .example(`${cmdName} add axe.js -g tools`, 'Stage axe.js for the tools project group')
                 .argv;
@@ -738,7 +737,7 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(2, 'must provide a valid file path to unstage')
+                .demand(1, 'must provide a valid file path to unstage')
                 .usage(`${cmdName} unstage <what> [-g group_name]`)
                 .example(`${cmdName} unstage axe.js -g tools`, 'Unstage axe.js for the tools project group')
                 .argv;
@@ -768,8 +767,8 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(2, 'must provide a valid command')
-                .usage(`${cmdName} feature <start|publish|finish> [feature_name] [-g group_name]`)
+                .demand(1, 'must provide a valid command')
+                .usage(`${cmdName} feature <start|publish|finish> <feature_name> [-g group_name]`)
                 .example(`${cmdName} feature start add-weapon -g tools`, 'Create a new feature "add-weapon" for the tools project group')
                 .example(`${cmdName} feature publish add-weapon -g tools`, 'Create a new feature "add-weapon" for the tools project group')
                 .example(`${cmdName} feature finish add-weapon -g tools`, 'Finish the feature "add-weapon" for the tools project group')
@@ -787,7 +786,7 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(2, 'must provide a valid command')
+                .demand(1, 'must provide a valid command')
                 .option('y', {
                     alias: 'yes',
                     type: 'boolean',
