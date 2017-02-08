@@ -28,7 +28,7 @@ export default class Client {
                 describe: 'The project group name',
                 global: true
             })
-            .demand(1, 'must provide a valid command')
+            .demand(1, 'You must provide a valid command')
             .wrap(Math.min(120, yargs.terminalWidth()));
     }
 
@@ -511,6 +511,381 @@ export default class Client {
             })
             .done();
     }
+
+    /**
+     * git flow hotfix command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
+    static runHotfix(manager, argv) {
+        const {group: groupName} = argv;
+        const [, action, hotfixName, base] = _.get(argv, '_', []);
+
+        let result;
+        switch (action) {
+            case 'start':
+                result = Client.hotfixStart(manager, groupName, hotfixName, base);
+                break;
+            case 'publish':
+                result = Client.hotfixPublish(manager, groupName, hotfixName);
+                break;
+            case 'finish':
+                result = Client.hotfixFinish(manager, groupName, hotfixName);
+                break;
+            default:
+                result = yargs.showHelp();
+                break;
+        }
+
+        return result;
+    }
+
+    /**
+     * git flow hotfix start command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {string} groupName - the group name
+     * @param {string} hotfixName - the hotfix name
+     * @param {string} base - an optional base for the hotfix, instead of develop
+     * @return {Promise}
+     */
+    static hotfixStart(manager, groupName, hotfixName, base) {
+        const scope = {};
+
+        return manager
+            .getGroup(groupName)
+            .then((group) => {
+                scope.group = group;
+                return group.fetch();
+            })
+            .then(() => {
+                return scope.group.hotfixStart(hotfixName, base);
+            })
+            .then((result) => {
+                Client.logSimpleTable(result);
+            })
+            .catch((error) => {
+                if (error instanceof ChainBreaker) {
+                    console.log('Encountered some errors, creation halted'.yellow);
+                    Client.logSimpleTable(scope.result);
+                }
+                else if (error && error.message) {
+                    console.log(error.message.red);
+                } else {
+                    console.log('Something went wrong (yeah, i know...)'.red);
+                }
+            })
+            .done();
+    }
+
+    /**
+     * git flow hotfix publish command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {string} groupName - the group name
+     * @param {string} hotfixName - the hotfix name
+     * @return {Promise}
+     */
+    static hotfixPublish(manager, groupName, hotfixName) {
+        const scope = {};
+
+        return manager
+            .getGroup(groupName)
+            .then((group) => {
+                scope.group = group;
+                return group.fetch();
+            })
+            .then(() => {
+                return scope.group.hotfixPublish(hotfixName);
+            })
+            .then((result) => {
+                Client.logSimpleTable(result);
+            })
+            .catch((error) => {
+                if (error instanceof ChainBreaker) {
+                    console.log('Encountered some errors, publication halted'.yellow);
+                    Client.logSimpleTable(scope.result);
+                }
+                else if (error && error.message) {
+                    console.log(error.message.red);
+                } else {
+                    console.log('Something went wrong (yeah, i know...)'.red);
+                }
+            })
+            .done();
+    }
+
+    /**
+     * git flow hotfix finish command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {string} groupName - the group name
+     * @param {string} hotfixName - the hotfix name
+     * @return {Promise}
+     */
+    static hotfixFinish(manager, groupName, hotfixName) {
+        const scope = {};
+
+        return manager
+            .getGroup(groupName)
+            .then((group) => {
+                scope.group = group;
+                return group.fetch();
+            })
+            .then(() => {
+                return scope.group.hotfixFinish(hotfixName);
+            })
+            .then((result) => {
+                Client.logSimpleTable(result);
+            })
+            .catch((error) => {
+                if (error instanceof ChainBreaker) {
+                    console.log('Encountered some errors, operation halted'.yellow);
+                    Client.logSimpleTable(scope.result);
+                }
+                else if (error && error.message) {
+                    console.log(error.message.red);
+                } else {
+                    console.log('Something went wrong (yeah, i know...)'.red);
+                }
+            })
+            .done();
+    }
+
+    /**
+     * git flow bugfix command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
+    static runBugfix(manager, argv) {
+        const {group: groupName} = argv;
+        const [, action, bugfixName, base] = _.get(argv, '_', []);
+
+        let result;
+        switch (action) {
+            case 'start':
+                result = Client.bugfixStart(manager, groupName, bugfixName, base);
+                break;
+            case 'publish':
+                result = Client.bugfixPublish(manager, groupName, bugfixName);
+                break;
+            case 'finish':
+                result = Client.bugfixFinish(manager, groupName, bugfixName);
+                break;
+            default:
+                result = yargs.showHelp();
+                break;
+        }
+
+        return result;
+    }
+
+    /**
+     * git flow bugfix start command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {string} groupName - the group name
+     * @param {string} bugfixName - the bugfix name
+     * @param {string} base - an optional base for the bugfix, instead of develop
+     * @return {Promise}
+     */
+    static bugfixStart(manager, groupName, bugfixName, base) {
+        const scope = {};
+
+        return manager
+            .getGroup(groupName)
+            .then((group) => {
+                scope.group = group;
+                return group.fetch();
+            })
+            .then(() => {
+                return scope.group.bugfixStart(bugfixName, base);
+            })
+            .then((result) => {
+                Client.logSimpleTable(result);
+            })
+            .catch((error) => {
+                if (error instanceof ChainBreaker) {
+                    console.log('Encountered some errors, creation halted'.yellow);
+                    Client.logSimpleTable(scope.result);
+                }
+                else if (error && error.message) {
+                    console.log(error.message.red);
+                } else {
+                    console.log('Something went wrong (yeah, i know...)'.red);
+                }
+            })
+            .done();
+    }
+
+    /**
+     * git flow bugfix publish command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {string} groupName - the group name
+     * @param {string} bugfixName - the bugfix name
+     * @return {Promise}
+     */
+    static bugfixPublish(manager, groupName, bugfixName) {
+        const scope = {};
+
+        return manager
+            .getGroup(groupName)
+            .then((group) => {
+                scope.group = group;
+                return group.fetch();
+            })
+            .then(() => {
+                return scope.group.bugfixPublish(bugfixName);
+            })
+            .then((result) => {
+                Client.logSimpleTable(result);
+            })
+            .catch((error) => {
+                if (error instanceof ChainBreaker) {
+                    console.log('Encountered some errors, publication halted'.yellow);
+                    Client.logSimpleTable(scope.result);
+                }
+                else if (error && error.message) {
+                    console.log(error.message.red);
+                } else {
+                    console.log('Something went wrong (yeah, i know...)'.red);
+                }
+            })
+            .done();
+    }
+
+    /**
+     * git flow bugfix finish command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {string} groupName - the group name
+     * @param {string} bugfixName - the bugfix name
+     * @return {Promise}
+     */
+    static bugfixFinish(manager, groupName, bugfixName) {
+        const scope = {};
+
+        return manager
+            .getGroup(groupName)
+            .then((group) => {
+                scope.group = group;
+                return group.fetch();
+            })
+            .then(() => {
+                return scope.group.bugfixFinish(bugfixName);
+            })
+            .then((result) => {
+                Client.logSimpleTable(result);
+            })
+            .catch((error) => {
+                if (error instanceof ChainBreaker) {
+                    console.log('Encountered some errors, operation halted'.yellow);
+                    Client.logSimpleTable(scope.result);
+                }
+                else if (error && error.message) {
+                    console.log(error.message.red);
+                } else {
+                    console.log('Something went wrong (yeah, i know...)'.red);
+                }
+            })
+            .done();
+    }
+
+        /**
+     * git flow support command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {yargs} argv - current yargs argv
+     * @return {Promise}
+     */
+    static runSupport(manager, argv) {
+        const {group: groupName} = argv;
+        const [, action, supportName, base] = _.get(argv, '_', []);
+
+        let result;
+        switch (action) {
+            case 'start':
+                result = Client.supportStart(manager, groupName, supportName, base);
+                break;
+            case 'publish':
+                result = Client.supportPublish(manager, groupName, supportName);
+                break;
+            default:
+                result = yargs.showHelp();
+                break;
+        }
+
+        return result;
+    }
+
+    /**
+     * git flow support start command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {string} groupName - the group name
+     * @param {string} supportName - the support name
+     * @param {string} base - an optional base for the support, instead of develop
+     * @return {Promise}
+     */
+    static supportStart(manager, groupName, supportName, base) {
+        const scope = {};
+
+        return manager
+            .getGroup(groupName)
+            .then((group) => {
+                scope.group = group;
+                return group.fetch();
+            })
+            .then(() => {
+                return scope.group.supportStart(supportName, base);
+            })
+            .then((result) => {
+                Client.logSimpleTable(result);
+            })
+            .catch((error) => {
+                if (error instanceof ChainBreaker) {
+                    console.log('Encountered some errors, creation halted'.yellow);
+                    Client.logSimpleTable(scope.result);
+                }
+                else if (error && error.message) {
+                    console.log(error.message.red);
+                } else {
+                    console.log('Something went wrong (yeah, i know...)'.red);
+                }
+            })
+            .done();
+    }
+
+    /**
+     * git flow support publish command handler
+     * @param {Manager} manager - multi-git manager
+     * @param {string} groupName - the group name
+     * @param {string} supportName - the support name
+     * @return {Promise}
+     */
+    static supportPublish(manager, groupName, supportName) {
+        const scope = {};
+
+        return manager
+            .getGroup(groupName)
+            .then((group) => {
+                scope.group = group;
+                return group.fetch();
+            })
+            .then(() => {
+                return scope.group.supportPublish(supportName);
+            })
+            .then((result) => {
+                Client.logSimpleTable(result);
+            })
+            .catch((error) => {
+                if (error instanceof ChainBreaker) {
+                    console.log('Encountered some errors, publication halted'.yellow);
+                    Client.logSimpleTable(scope.result);
+                }
+                else if (error && error.message) {
+                    console.log(error.message.red);
+                } else {
+                    console.log('Something went wrong (yeah, i know...)'.red);
+                }
+            })
+            .done();
+    }
     //endregion
 
     //region Output
@@ -706,7 +1081,7 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(1, 'must provide a valid git ref to checkout')
+                .demand(1, 'You must provide a valid git ref to checkout')
                 .usage(`${cmdName} checkout <what> [-g group_name]`)
                 .example(`${cmdName} checkout develop -g tools`, 'Checkout the branch develop of the tools project group')
                 .argv;
@@ -722,7 +1097,7 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(1, 'must provide a valid file path to add')
+                .demand(1, 'You must provide a valid file path to add')
                 .usage(`${cmdName} add <what> [-g group_name]`)
                 .example(`${cmdName} add axe.js -g tools`, 'Stage axe.js for the tools project group')
                 .argv;
@@ -737,7 +1112,7 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(1, 'must provide a valid file path to unstage')
+                .demand(1, 'You must provide a valid file path to unstage')
                 .usage(`${cmdName} unstage <what> [-g group_name]`)
                 .example(`${cmdName} unstage axe.js -g tools`, 'Unstage axe.js for the tools project group')
                 .argv;
@@ -767,11 +1142,11 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(1, 'must provide a valid command')
+                .demand(1, 'You must provide a valid command')
                 .usage(`${cmdName} feature <start|publish|finish> <feature_name> [-g group_name]`)
-                .example(`${cmdName} feature start add-weapon -g tools`, 'Create a new feature "add-weapon" for the tools project group')
-                .example(`${cmdName} feature publish add-weapon -g tools`, 'Create a new feature "add-weapon" for the tools project group')
-                .example(`${cmdName} feature finish add-weapon -g tools`, 'Finish the feature "add-weapon" for the tools project group')
+                .example(`${cmdName} feature start add-shovel -g tools`, 'Create a new feature "add-shovel" for the tools project group')
+                .example(`${cmdName} feature publish add-shovel -g tools`, 'Create a new feature "add-shovel" for the tools project group')
+                .example(`${cmdName} feature finish add-shovel -g tools`, 'Finish the feature "add-shovel" for the tools project group')
                 .example(`${cmdName} feature finish -g tools`, 'Finish the current feature for the tools project group')
                 .argv;
         },
@@ -786,7 +1161,7 @@ defaultCommandList = {
             return yargs
                 .help('h')
                 .alias('h', 'help')
-                .demand(1, 'must provide a valid command')
+                .demand(1, 'You must provide a valid command')
                 .option('y', {
                     alias: 'yes',
                     type: 'boolean',
@@ -800,5 +1175,62 @@ defaultCommandList = {
                 .argv;
         },
         handler: Client.runRelease
-    }
+    },
+    hotfix: {
+        command: 'hotfix',
+        aliases: ['hf'],
+        desc: '[git-flow] Create a new hotfix for the selected group',
+        builder: (yargs) => {
+            const cmdName = Client.getCLIName(yargs);
+            return yargs
+                .help('h')
+                .alias('h', 'help')
+                .demand(1, 'You must provide a valid command')
+                .usage(`${cmdName} hotfix <start|publish|finish> <hotfix_name> [hotfix_base] [-g group_name]`)
+                .example(`${cmdName} hotfix start fix-shovel -g tools`, 'Create a new hotfix "fix-shovel" for the tools project group')
+                .example(`${cmdName} hotfix publish fix-shovel -g tools`, 'Create a new hotfix "fix-shovel" for the tools project group')
+                .example(`${cmdName} hotfix finish fix-shovel -g tools`, 'Finish the hotfix "fix-shovel" for the tools project group')
+                .example(`${cmdName} hotfix finish -g tools`, 'Finish the current hotfix for the tools project group')
+                .argv;
+        },
+        handler: Client.runHotfix
+    },
+    bugfix: {
+        command: 'bugfix',
+        aliases: ['bf'],
+        desc: '[git-flow] Create a new bugfix for the selected group',
+        builder: (yargs) => {
+            const cmdName = Client.getCLIName(yargs);
+            return yargs
+                .help('h')
+                .alias('h', 'help')
+                .demand(1, 'You must provide a valid command')
+                .usage(`${cmdName} bugfix <start|publish|finish> <bugfix_name> <bugfix_base> [-g group_name]`)
+                .example(`${cmdName} bugfix start fix-shovel -g tools`, 'Create a new bugfix "fix-shovel" for the tools project group')
+                .example(`${cmdName} bugfix publish fix-shovel -g tools`, 'Create a new bugfix "fix-shovel" for the tools project group')
+                .example(`${cmdName} bugfix finish fix-shovel -g tools`, 'Finish the bugfix "fix-shovel" for the tools project group')
+                .example(`${cmdName} bugfix finish -g tools`, 'Finish the current bugfix for the tools project group')
+                .argv;
+        },
+        handler: Client.runBugfix
+    },
+    support: {
+        command: 'support',
+        aliases: ['sp'],
+        desc: '[git-flow] Create a new support branch for the selected group',
+        builder: (yargs) => {
+            const cmdName = Client.getCLIName(yargs);
+            return yargs
+                .help('h')
+                .alias('h', 'help')
+                .demand(1, 'You must provide a valid command')
+                .usage(`${cmdName} support <start|publish|finish> <support_name> [-g group_name]`)
+                .example(`${cmdName} support start support-shovel -g tools`, 'Create a new support "support-shovel" for the tools project group')
+                .example(`${cmdName} support publish support-shovel -g tools`, 'Create a new support "support-shovel" for the tools project group')
+                .example(`${cmdName} support finish support-shovel -g tools`, 'Finish the support "support-shovel" for the tools project group')
+                .example(`${cmdName} support finish -g tools`, 'Finish the current support for the tools project group')
+                .argv;
+        },
+        handler: Client.runSupport
+    },
 };

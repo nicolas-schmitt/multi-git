@@ -79,7 +79,7 @@ export class BehindRepositoryError extends Error {
 }
 
 export class InvalidVersionError extends Error {
-    constructor(message = 'This isn\'t a valid version') {
+    constructor(message = `This isn't a valid version`) {
         super(message);
 
         this.code = 'invalid-version';
@@ -87,9 +87,17 @@ export class InvalidVersionError extends Error {
 }
 
 export class InvalidFeatureBranchError extends Error {
-    constructor(message = 'The current branch isn\'t a feature') {
+    constructor(message = `The current branch isn't a feature`) {
         super(message);
 
         this.code = 'invalid-feature';
+    }
+}
+
+export class InvalidSupportBranchError extends Error {
+    constructor(message = `The current branch isn't a support branch`) {
+        super(message);
+
+        this.code = 'invalid-support';
     }
 }

@@ -10,6 +10,7 @@ import {
     AheadRepositoryError,
     BehindRepositoryError,
     DirtyRepositoryError,
+    InvalidSupportBranchError,
     MultipleActiveReleaseError,
     NoActiveReleaseError,
     NoPackageError,
@@ -420,6 +421,7 @@ export default class Directory {
      * @return {Promise}
      */
     featureFinish(name) {
+        process.env['GIT_MERGE_AUTOEDIT'] = 'no';
         const args = ['flow', 'feature', 'finish'];
         if (name) {
             args.push(name);
@@ -462,18 +464,21 @@ export default class Directory {
      * @return {Promise}
      */
     releaseFinish(name) {
+        process.env['GIT_MERGE_AUTOEDIT'] = 'no';
         const args = ['flow', 'release', 'finish'];
         if (name) {
             args.push(name);
         }
 
+        args.push('-m', 'Finish');
+
         return this.git.rawAsync(args);
     }
 
     /**
-     * [git flow] Starts a new release
+     * [git flow] Starts a new hotfix
      * @param {string} name - the hotfix name
-     * @param {string} base - an optional base for the release, instead of develop
+     * @param {string} base - an optional base for the hotfix, instead of develop
      * @return {Promise}
      */
     hotfixStart(name, base) {
@@ -509,13 +514,114 @@ export default class Directory {
      * @return {Promise}
      */
     hotfixFinish(name) {
+        process.env['GIT_MERGE_AUTOEDIT'] = 'no';
         const args = ['flow', 'hotfix', 'finish'];
+        if (name) {
+            args.push(name);
+        }
+
+        args.push('-m', 'Finish');
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Starts a new bugfix
+     * @param {string} name - the bugfix name
+     * @param {string} base - an optional base for the bugfix, instead of develop
+     * @return {Promise}
+     */
+    bugfixStart(name, base) {
+        const args = ['flow', 'bugfix', 'start'];
+        if (name) {
+            args.push(name);
+
+            if (base) {
+                args.push(base);
+            }
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Publishes the current bugfix
+     * @param {string} name - the bugfix name
+     * @return {Promise}s
+     */
+    bugfixPublish(name) {
+        const args = ['flow', 'bugfix', 'publish'];
         if (name) {
             args.push(name);
         }
 
         return this.git.rawAsync(args);
     }
+
+    /**
+     * [git flow] Finishes the current bugfix
+     * @param {string} name - the bugfix name
+     * @return {Promise}
+     */
+    bugfixFinish(name) {
+        process.env['GIT_MERGE_AUTOEDIT'] = 'no';
+        const args = ['flow', 'bugfix', 'finish'];
+        if (name) {
+            args.push(name);
+        }
+
+        args.push('-m', 'Finish');
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Starts a new support branch
+     * @param {string} name - the support branch name
+     * @param {string} base - a base for the support
+     * @return {Promise}
+     */
+    supportStart(name, base) {
+        const args = ['flow', 'support', 'start'];
+        if (name) {
+            args.push(name);
+
+            if (base) {
+                args.push(base);
+            }
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Publishes the current support branch
+     * @param {string} name - the support branch name
+     * @return {Promise}s
+     */
+    supportPublish(name) {
+        return this
+            .all([
+                this.config(),
+                this.status()
+            ])
+            .then(([config, status]) => {
+                let support;
+                const prefix = config.gitflow.prefix.support;
+
+                if (name) {
+                    support = prefix + name;
+                } else if (status.current.startsWith(prefix)) {
+                    support = config.current;
+                } else {
+                    throw new InvalidSupportBranchError();
+                }
+ 
+                const remote = this.getDefaultRemote(config);
+                return this.push(remote, support);
+            });
+    }
+
 
     /**
      * [git flow] Gets the current release branch

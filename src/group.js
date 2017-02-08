@@ -437,12 +437,13 @@ export default class Group {
     /**
      * [git flow] Starts a new release
      * @param {string} name - the release name
+     * @param {string} base - an optional base for the release, instead of develop
      * @return {Promise}
      */
-    releaseStart(name) {
+    releaseStart(name, base) {
         return Promise.map(this.members, (member) => {
             return member
-                .releaseStart(name)
+                .releaseStart(name, base)
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })
@@ -479,6 +480,153 @@ export default class Group {
         return Promise.map(this.members, (member) => {
             return member
                 .releaseFinish(name)
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Starts a new hotfix
+     * @param {string} name - the hotfix name
+     * @param {string} base - an optional base for the hotfix, instead of develop
+     * @return {Promise}
+     */
+    hotfixStart(name, base) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .hotfixStart(name, base)
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Publishes the current hotfix
+     * @param {string} name - the hotfix name
+     * @return {Promise}
+     */
+    hotfixPublish(name) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .hotfixPublish(name)
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Finishes the current hotfix
+     * @param {string} name - the hotfix name
+     * @return {Promise}
+     */
+    hotfixFinish(name) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .hotfixFinish(name)
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Starts a new bugfix
+     * @param {string} name - the bugfix name
+     * @param {string} base - an optional base for the bugfix, instead of develop
+     * @return {Promise}
+     */
+    bugfixStart(name, base) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .bugfixStart(name, base)
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Publishes the current bugfix
+     * @param {string} name - the bugfix name
+     * @return {Promise}
+     */
+    bugfixPublish(name) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .bugfixPublish(name)
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Finishes the current bugfix
+     * @param {string} name - the bugfix name
+     * @return {Promise}
+     */
+    bugfixFinish(name) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .bugfixFinish(name)
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Starts a new support
+     * @param {string} name - the support name
+     * @param {string} base - a base for the support
+     * @return {Promise}
+     */
+    supportStart(name, base) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .supportStart(name, base)
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Publishes the current support
+     * @param {string} name - the support name
+     * @return {Promise}
+     */
+    supportPublish(name) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .supportPublish(name)
                 .then(() => {
                     return {isRejected: false, parent: member};
                 })
