@@ -433,12 +433,17 @@ export default class Directory {
     /**
      * [git flow] Starts a new release
      * @param {string} name - the relase name
+     * @param {string} base - an optional base for the feature, instead of develop
      * @return {Promise}
      */
-    releaseStart(name) {
+    releaseStart(name, base) {
         const args = ['flow', 'release', 'start'];
         if (name) {
             args.push(name);
+
+            if (base) {
+                args.push(base);
+            }
         }
 
         return this.git.rawAsync(args);
@@ -600,7 +605,7 @@ export default class Directory {
      * @return {Promise}s
      */
     supportPublish(name) {
-        return this
+        return Promise
             .all([
                 this.config(),
                 this.status()
