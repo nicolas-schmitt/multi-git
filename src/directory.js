@@ -260,7 +260,7 @@ export default class Directory {
      * @return {Promise}
      */
     addFiles(files) {
-        return this.git.addAsync(files);
+        return this.git.addAsync(files).then(() => files);
     }
 
     /**
@@ -466,16 +466,17 @@ export default class Directory {
     /**
      * [git flow] Finishes the current release
      * @param {string} name - the release name
+     * @param {string[]} extras - additional command arguments
      * @return {Promise}
      */
-    releaseFinish(name) {
+    releaseFinish(name, extras = []) {
         process.env['GIT_MERGE_AUTOEDIT'] = 'no';
         const args = ['flow', 'release', 'finish'];
         if (name) {
             args.push(name);
         }
 
-        args.push('-m', 'Finish');
+        args.push('-m', 'Finish', ...extras);
 
         return this.git.rawAsync(args);
     }
