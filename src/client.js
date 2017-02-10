@@ -34,6 +34,7 @@ export default class Client {
 
     /**
      * Sets a new command or update an existing one
+     * @param {string} name - the command name
      * @param {object} command - a yargs command description object
      */
     setCommand(name, command) {
@@ -49,6 +50,24 @@ export default class Client {
     }
 
     /**
+     * Unets a command
+     * @param {string} name - the command name
+     */
+    unsetCommand(name) {
+        delete this.commands[name];
+    }
+
+    /**
+     * Unsets multiple commands
+     * @param {string[]} names - an array of command names
+     */
+    unsetCommands(names) {
+        _.forEach(names, (name) => {
+            delete this.commands[name];
+        });
+    }
+
+    /**
      * Adds all commands from this.commands to yargs
      */
     loadCommands() {
@@ -59,6 +78,14 @@ export default class Client {
 
             yargs.command(command);
         });
+    }
+
+    /**
+     * Sets a message to print at the end of the usage instructions.
+     * @param {string} epilogue - the message to print
+     */
+    setEpilogue(epilogue) {
+        yargs.epilogue(epilogue);
     }
 
     /**
