@@ -13,7 +13,7 @@
     "build": "babel src -d build -s",
     "watch": "npm run build -- -w",
     "install": "npm run build && node npm-scripts.js install",
-    "test": "mocha",
+    "test": "mocha --compilers js:babel-core/register",
     "lint": "eslint src bin"
   },
   "repository": {
@@ -35,7 +35,7 @@
   ],
   "dependencies": {
     "babel-cli": "^6.18.0",
-    "babel-preset-env": "1.1.7",
+    "babel-preset-env": "^1.1.7",
     "bluebird": "^3.4.7",
     "bump-regex": "^2.3.0",
     "cli-table2": "^0.2.0",
@@ -53,7 +53,7 @@
     "chai-string": "^1.2.0",
     "eslint": "^3.13.1",
     "mocha": "^3.1.2",
-    "mock-fs": "^3.11.0",
+    "mock-fs": "^4.00.0",
     "nodemon": "^1.11.0",
     "proxyquire": "^1.7.10"
   },
