@@ -10,6 +10,7 @@ import {
     AheadRepositoryError,
     BehindRepositoryError,
     DirtyRepositoryError,
+    InvalidSupportBranchError,
     MultipleActiveReleaseError,
     NoActiveReleaseError,
     NoPackageError,
@@ -59,7 +60,6 @@ export default class Directory {
             return Promise.resolve(() => { return this._hasGit; });
         }
     }
-
 
     /**
      * Initializes local git client.
@@ -260,7 +260,7 @@ export default class Directory {
      * @return {Promise}
      */
     addFiles(files) {
-        return this.git.addAsync(files);
+        return this.git.addAsync(files).then(() => files);
     }
 
     /**
@@ -383,25 +383,251 @@ export default class Directory {
     }
 
     /**
-     * [git flow] Starts a new release
+     * [git flow] Starts a new feature
+     * @param {string} name - the relase name
+     * @param {string} base - an optional base for the feature, instead of develop
      * @return {Promise}
      */
-    startRelease(name) {
+    featureStart(name, base) {
+        const args = ['flow', 'feature', 'start'];
+        if (name) {
+            args.push(name);
+
+            if (base) {
+                args.push(base);
+            }
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Publishes the current release
+     * @param {string} name - the feature name
+     * @return {Promise}
+     */
+    featurePublish(name) {
+        const args = ['flow', 'feature', 'publish'];
+        if (name) {
+            args.push(name);
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Finishes the current release
+     * @param {string} name - the feature name
+     * @return {Promise}
+     */
+    featureFinish(name) {
+        process.env['GIT_MERGE_AUTOEDIT'] = 'no';
+        const args = ['flow', 'feature', 'finish'];
+        if (name) {
+            args.push(name);
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Starts a new release
+     * @param {string} name - the relase name
+     * @param {string} base - an optional base for the feature, instead of develop
+     * @return {Promise}
+     */
+    releaseStart(name, base) {
+        const args = ['flow', 'release', 'start'];
+        if (name) {
+            args.push(name);
+
+            if (base) {
+                args.push(base);
+            }
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Publishes the current release
+     * @param {string} name - the release name
+     * @return {Promise}s
+     */
+    releasePublish(name) {
+        const args = ['flow', 'release', 'publish'];
+        if (name) {
+            args.push(name);
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Finishes the current release
+     * @param {string} name - the release name
+     * @param {string[]} extras - additional command arguments
+     * @return {Promise}
+     */
+    releaseFinish(name, extras = []) {
+        process.env['GIT_MERGE_AUTOEDIT'] = 'no';
+        const args = ['flow', 'release', 'finish'];
+        if (name) {
+            args.push(name);
+        }
+
+        args.push('-m', 'Finish', ...extras);
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Starts a new hotfix
+     * @param {string} name - the hotfix name
+     * @param {string} base - an optional base for the hotfix, instead of develop
+     * @return {Promise}
+     */
+    hotfixStart(name, base) {
+        const args = ['flow', 'hotfix', 'start'];
+        if (name) {
+            args.push(name);
+
+            if (base) {
+                args.push(base);
+            }
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Publishes the current hotfix
+     * @param {string} name - the hotfix name
+     * @return {Promise}s
+     */
+    hotfixPublish(name) {
+        const args = ['flow', 'hotfix', 'publish'];
+        if (name) {
+            args.push(name);
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Finishes the current hotfix
+     * @param {string} name - the hotfix name
+     * @return {Promise}
+     */
+    hotfixFinish(name) {
+        process.env['GIT_MERGE_AUTOEDIT'] = 'no';
+        const args = ['flow', 'hotfix', 'finish'];
+        if (name) {
+            args.push(name);
+        }
+
+        args.push('-m', 'Finish');
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Starts a new bugfix
+     * @param {string} name - the bugfix name
+     * @param {string} base - an optional base for the bugfix, instead of develop
+     * @return {Promise}
+     */
+    bugfixStart(name, base) {
+        const args = ['flow', 'bugfix', 'start'];
+        if (name) {
+            args.push(name);
+
+            if (base) {
+                args.push(base);
+            }
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Publishes the current bugfix
+     * @param {string} name - the bugfix name
+     * @return {Promise}s
+     */
+    bugfixPublish(name) {
+        const args = ['flow', 'bugfix', 'publish'];
+        if (name) {
+            args.push(name);
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Finishes the current bugfix
+     * @param {string} name - the bugfix name
+     * @return {Promise}
+     */
+    bugfixFinish(name) {
+        process.env['GIT_MERGE_AUTOEDIT'] = 'no';
+        const args = ['flow', 'bugfix', 'finish'];
+        if (name) {
+            args.push(name);
+        }
+
+        args.push('-m', 'Finish');
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Starts a new support branch
+     * @param {string} name - the support branch name
+     * @param {string} base - a base for the support
+     * @return {Promise}
+     */
+    supportStart(name, base) {
+        const args = ['flow', 'support', 'start'];
+        if (name) {
+            args.push(name);
+
+            if (base) {
+                args.push(base);
+            }
+        }
+
+        return this.git.rawAsync(args);
+    }
+
+    /**
+     * [git flow] Publishes the current support branch
+     * @param {string} name - the support branch name
+     * @return {Promise}s
+     */
+    supportPublish(name) {
         return Promise
             .all([
                 this.config(),
-                this.detailedStatus(),
+                this.status()
             ])
-            .then(([config, {editCount}]) => {
-                if (editCount > 0) {
-                    throw new DirtyRepositoryError();
-                }
+            .then(([config, status]) => {
+                let support;
+                const prefix = config.gitflow.prefix.support;
 
-                const branchName = config.gitflow.prefix.release + name;
-                const startPoint = config.gitflow.branch.develop;
-                return this.createBranch(branchName, startPoint);
+                if (name) {
+                    support = prefix + name;
+                } else if (status.current.startsWith(prefix)) {
+                    support = config.current;
+                } else {
+                    throw new InvalidSupportBranchError();
+                }
+ 
+                const remote = this.getDefaultRemote(config);
+                return this.push(remote, support);
             });
     }
+
 
     /**
      * [git flow] Gets the current release branch
@@ -458,82 +684,6 @@ export default class Directory {
                 }
 
                 return !result;
-            });
-    }
-
-    /**
-     * [git flow] Publishes the current release
-     * @return {Promise}
-     */
-    publishRelease() {
-        return this
-            .getReleaseBranch()
-            .then((branch) => {
-                return this.push('origin', branch.name);
-            });
-    }
-
-    /**
-     * [git flow] Finishes the current release
-     * @return {Promise}
-     */
-    finishRelease() {
-        const scope = {};
-
-        return this
-            .config()
-            .then((config) => {
-                scope.master = config.gitflow.branch.master;
-                scope.develop = config.gitflow.branch.develop;
-                scope.prefix = config.gitflow.prefix.release;
-                return this.getReleaseBranch();
-            })
-            .then((branch) => {
-                scope.release = branch.name;
-                scope.remote = branch.remote || 'origin';
-
-                if (!branch.curent) {
-                    if (branch.isRemoteRelease) {
-                        scope.release = branch.localName;
-                    }
-
-                    scope.version = scope.release.substr(scope.prefix.length);
-
-                    return this.checkout(scope.release);
-                }
-            })
-            .then(() => {
-                return this.pull(scope.remote, scope.release);
-            })
-            .then(() => {
-                return this.checkout(scope.master);
-            })
-            .then(() => {
-                return this.pull(scope.remote, scope.master);
-            })
-            .then(() => {
-                return this.mergeFromTo(scope.release, scope.master);
-            })
-            .then(() => {
-                return this.tag(scope.version, 'Finish ' + scope.version);
-            })
-            .then(() => {
-                return this.checkout(scope.develop);
-            })
-            .then(() => {
-                return this.pull(scope.remote, scope.develop);
-            })
-            .then(() => {
-                return this.mergeFromTo(scope.version, scope.develop);
-            })
-            .then(() => {
-                return this.pushAllDefaults();
-            })
-            .then(() => {
-                return this.deleteBranch(scope.release);
-            })
-            .then(() => {
-                return this.push(scope.remote, ':' + scope.release);
             });
     }
 
@@ -604,5 +754,14 @@ export default class Directory {
 
                 return true;
             });
+    }
+
+    /**
+     * Gets the remote associated to the git flow master branch
+     * @param {object} config - a git config object
+     * @return {string}
+     */
+    getDefaultRemote(config) {
+        return config.branch[config.gitflow.branch.master].remote;
     }
 }

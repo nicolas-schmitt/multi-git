@@ -1,6 +1,6 @@
 {
   "name": "multi-git",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Handle multiple git repositories at once",
   "bin": {
     "multi-git": "./bin/multi-git.js"
@@ -13,7 +13,7 @@
     "build": "babel src -d build -s",
     "watch": "npm run build -- -w",
     "install": "npm run build && node npm-scripts.js install",
-    "test": "mocha",
+    "test": "mocha --compilers js:babel-core/register",
     "lint": "eslint src bin"
   },
   "repository": {
@@ -34,26 +34,26 @@
     "service"
   ],
   "dependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-preset-env": "0.0.9",
-    "bluebird": "^3.4.6",
+    "babel-cli": "^6.23.0",
+    "babel-preset-env": "^1.1.8",
+    "bluebird": "^3.4.7",
     "bump-regex": "^2.3.0",
     "cli-table2": "^0.2.0",
     "colors": "^1.1.2",
     "inquirer-confirm": "^0.2.2",
-    "lodash": "^4.16.4",
-    "simple-git": "^1.63.0",
-    "source-map-support": "^0.4.6",
-    "yargs": "^6.0.0"
+    "lodash": "^4.17.4",
+    "simple-git": "^1.66.0",
+    "source-map-support": "^0.4.8",
+    "yargs": "^6.6.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-spies": "^0.7.1",
     "chai-string": "^1.2.0",
-    "eslint": "^3.7.1",
+    "eslint": "^3.13.1",
     "mocha": "^3.1.2",
-    "mock-fs": "^3.11.0",
+    "mock-fs": "^4.00.0",
     "nodemon": "^1.11.0",
     "proxyquire": "^1.7.10"
   },

@@ -8,7 +8,7 @@ What's new ?
 * nodegit has been dropped in favor of simple-git. That way, you won't have to compile any dependency.
 * Most common git commands are now supported.
 * multi-git can be used from any directory, even if it's not listed in your configuration file.
-
+* git-flow commands
 
 Intended use
 -------------------------------------------------------------------
@@ -90,15 +90,22 @@ Available commands
 -------------------------------------------------------------------
 ````bash
 $ multi-git -h
+multi-git <command> [options]
+
 Commands:
-  status    Run git status for the selected project group
-  fetch     Run git fetch for the selected project group
-  pull      Pull the tracked branch <remote>/<branch> for each project within the group
-  push      Push the tracked branch <remote>/<branch> for each project within the group
-  checkout  Checkout the same branch for each project within the selected group
-  add       Stage one or more files for each project within the selected group
+  status    Run git status for the selected project group                                                [aliases: st]
+  fetch     Run git fetch for the selected project group                                                 [aliases: fe]
+  pull      Pull the tracked branch <remote>/<branch> for each project within the group                  [aliases: pl]
+  push      Push the tracked branch <remote>/<branch> for each project within the group                  [aliases: ps]
+  checkout  Checkout the same branch for each project within the selected group                          [aliases: co]
+  add       Stage one or more files for each project within the selected group                            [aliases: a]
   unstage   Unstage one or more files for each project within the selected group
   stash     Stash changes on each project within the selected group
+  feature   [git-flow] Create a new feature for the selected group                                       [aliases: ft]
+  release   [git-flow] Create a new version for the selected group                                       [aliases: rl]
+  hotfix    [git-flow] Create a new hotfix for the selected group                                        [aliases: hf]
+  bugfix    [git-flow] Create a new bugfix for the selected group                                        [aliases: bf]
+  support   [git-flow] Create a new support branch for the selected group                                [aliases: sp]
 
 Options:
   -g, --group  The project group name
