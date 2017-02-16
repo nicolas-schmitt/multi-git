@@ -7,4 +7,4 @@ require('source-map-support').install();
 var Client = _interopRequireDefault(require('../build/client')).default;
 
 var client = new Client();
-client.runPromptCommand();
+client.run();
