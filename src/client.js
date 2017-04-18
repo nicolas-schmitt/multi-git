@@ -410,18 +410,18 @@ export default class Client {
      */
     static runRelease(manager, argv) {
         const {group: groupName} = argv;
-        const [, action, featureName] = _.get(argv, '_', []);
+        const [, action, releaseName] = _.get(argv, '_', []);
 
         let result;
         switch (action) {
             case 'start':
-                result = Client.releaseStart(manager, groupName, featureName);
+                result = Client.releaseStart(manager, groupName, releaseName);
                 break;
             case 'publish':
-                result = Client.releasePublish(manager, groupName, featureName);
+                result = Client.releasePublish(manager, groupName, releaseName);
                 break;
             case 'finish':
-                result = Client.releaseFinish(manager, groupName, featureName);
+                result = Client.releaseFinish(manager, groupName, releaseName);
                 break;
             default:
                 result = yargs.showHelp();
@@ -435,10 +435,10 @@ export default class Client {
      * git flow release start command handler
      * @param {Manager} manager - multi-git manager
      * @param {string} groupName - the group name
-     * @param {string} featureName - the feature name
+     * @param {string} releaseName - the release name
      * @return {Promise}
      */
-    static releaseStart(manager, groupName, featureName) {
+    static releaseStart(manager, groupName, releaseName) {
         const scope = {};
 
         return manager
@@ -448,7 +448,7 @@ export default class Client {
                 return group.fetch();
             })
             .then(() => {
-                return scope.group.releaseStart(featureName);
+                return scope.group.releaseStart(releaseName);
             })
             .then((result) => {
                 Client.logSimpleTable(result);
@@ -471,10 +471,10 @@ export default class Client {
      * git flow release publish command handler
      * @param {Manager} manager - multi-git manager
      * @param {string} groupName - the group name
-     * @param {string} featureName - the feature name
+     * @param {string} releaseName - the release name
      * @return {Promise}
      */
-    static releasePublish(manager, groupName, featureName) {
+    static releasePublish(manager, groupName, releaseName) {
         const scope = {};
 
         return manager
@@ -484,7 +484,7 @@ export default class Client {
                 return group.fetch();
             })
             .then(() => {
-                return scope.group.releasePublish(featureName);
+                return scope.group.releasePublish(releaseName);
             })
             .then((result) => {
                 Client.logSimpleTable(result);
@@ -507,10 +507,10 @@ export default class Client {
      * git flow release finish command handler
      * @param {Manager} manager - multi-git manager
      * @param {string} groupName - the group name
-     * @param {string} featureName - the feature name
+     * @param {string} releaseName - the release name
      * @return {Promise}
      */
-    static releaseFinish(manager, groupName, featureName) {
+    static releaseFinish(manager, groupName, releaseName) {
         const scope = {};
 
         return manager
@@ -520,7 +520,7 @@ export default class Client {
                 return group.fetch();
             })
             .then(() => {
-                return scope.group.releaseFinish(featureName);
+                return scope.group.releaseFinish(releaseName);
             })
             .then((result) => {
                 Client.logSimpleTable(result);
@@ -1195,10 +1195,10 @@ defaultCommandList = {
                     describe: 'Automatically confirm the branch creation'
                 })
                 .usage(`${cmdName} release <start|publish|finish> [patch|minor|major|version] -g group_name`)
-                .example(`${cmdName} release start -g extranet`, 'Creates a patch release on every member of the extranet project group')
-                .example(`${cmdName} release start 1.2.3 -g extranet`, 'Creates a release named 1.2.3 on every member of the extranet project group')
-                .example(`${cmdName} release publish -g extranet`, 'Publishes the current release on every member of the extranet project group')
-                .example(`${cmdName} release finish -g extranet`, 'Finishes the current release on every member of the extranet project group')
+                .example(`${cmdName} release start -g tools`, 'Creates a patch release on every member of the tools project group')
+                .example(`${cmdName} release start 1.2.3 -g tools`, 'Creates a release named 1.2.3 on every member of the tools project group')
+                .example(`${cmdName} release publish -g tools`, 'Publishes the current release on every member of the tools project group')
+                .example(`${cmdName} release finish -g tools`, 'Finishes the current release on every member of the extranet project group')
                 .argv;
         },
         handler: Client.runRelease
