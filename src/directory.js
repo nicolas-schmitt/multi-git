@@ -622,7 +622,7 @@ export default class Directory {
                 } else {
                     throw new InvalidSupportBranchError();
                 }
- 
+
                 const remote = this.getDefaultRemote(config);
                 return this.push(remote, support);
             });
@@ -763,5 +763,53 @@ export default class Directory {
      */
     getDefaultRemote(config) {
         return config.branch[config.gitflow.branch.master].remote;
+    }
+
+    /**
+     * Gets how much commits the left branch has more than the right one
+     * @param {string} left - a git config object
+     * @param {string} right - a git config object
+     * @return {string}
+     */
+    countRevisions(left, right) {
+        return this
+            .git
+            .rawAsync(['rev-list', '--left-right', '--count', `${left}...${right}`])
+            .then((revList) => {
+                const regex = /^(\d+)\s+(\d+)/;
+                const matches = regex.exec(revList);
+
+                if (revList && matches) {
+                    const leftCount = parseInt(matches[1], 10) || 0;
+                    const rightCount = parseInt(matches[2], 10) || 0;
+                    const diff = rightCount - leftCount;
+                    return {
+                        [left]: leftCount,
+                        [right]: rightCount,
+                        diff,
+                    };
+                } else {
+                    throw new Error('invalid comparison');
+                }
+            });
+    }
+
+    /**
+     * Checks whether or not the next release will be worth creating.
+     * IE: is base or develop ahead of master.
+     * @param {string} base - an optional base for the release, instead of develop
+     * @return {boolean}
+     */
+    isNextReleaseWorthCreating(base) {
+        return this
+            .config()
+            .then((config) => {
+                const left = config.gitflow.branch.master;
+                const right = base || config.gitflow.branch.develop;
+                return this.countRevisions(left, right);
+            })
+            .then((result) => {
+                return result.diff > 0;
+            });
     }
 }

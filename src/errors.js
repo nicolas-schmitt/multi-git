@@ -101,3 +101,11 @@ export class InvalidSupportBranchError extends Error {
         this.code = 'invalid-support';
     }
 }
+
+export class DirectorySkippedError extends Error {
+    constructor(reason = '', message = `The current directory has been skipped: ${reason}`) {
+        super(message);
+
+        this.code = 'directory-skipped';
+    }
+}
