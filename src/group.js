@@ -3,7 +3,7 @@ import Promise from 'bluebird';
 import bumpVersion from 'bump-regex';
 
 import Directory from './directory';
-import {InvalidVersionError} from './errors';
+import {DirectorySkippedError, InvalidVersionError} from './errors';
 
 const VersionRegexp = new RegExp('^\\d+\\.\\d+\\.\\d+(?:-\\w+(?:\\.\\d+)?)?$');
 const bumpVersionAsync = Promise.promisify(bumpVersion);
@@ -20,9 +20,11 @@ export default class Group {
             const config = arguments[0];
             this.name = config.name;
             this.members = config.members;
+            this.allowEmptyRelease = config.allowEmptyRelease;
         } else {
             this.name = arguments[0] || '';
             this.members = arguments[1] || [];
+            this.allowEmptyRelease = true;
         }
 
         this.members = _.map(this.members, (member) => {
@@ -448,6 +450,36 @@ export default class Group {
                     return {isRejected: false, parent: member};
                 })
                 .catch((error) => {
+                    return {isRejected: true, parent: member, error};
+                });
+        });
+    }
+
+    /**
+     * [git flow] Starts a new release for directories where develop is ahead of master
+     * @param {string} name - the release name
+     * @param {string} base - an optional base for the release, instead of develop
+     * @return {Promise}
+     */
+    filteredReleaseStart(name, base) {
+        return Promise.map(this.members, (member) => {
+            return member
+                .isNextReleaseWorthCreating(base)
+                .then((result) => {
+                    if (result) {
+                        return member.releaseStart(name, base);
+                    }
+
+                    throw new DirectorySkippedError('Nothing to commit.');
+                })
+                .then(() => {
+                    return {isRejected: false, parent: member};
+                })
+                .catch((error) => {
+                    if (error.code === 'directory-skipped') {
+                        return {isRejected: true, isWarned: true, parent: member, error};
+                    }
+
                     return {isRejected: true, parent: member, error};
                 });
         });

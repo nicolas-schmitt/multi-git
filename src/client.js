@@ -448,7 +448,9 @@ export default class Client {
                 return group.fetch();
             })
             .then(() => {
-                return scope.group.releaseStart(releaseName);
+                return scope.group.allowEmptyRelease ?
+                    scope.group.releaseStart(releaseName) :
+                    scope.group.filteredReleaseStart(releaseName);
             })
             .then((result) => {
                 Client.logSimpleTable(result);
@@ -935,10 +937,17 @@ export default class Client {
 
         _.forEach(result, (item) => {
             if (item.isRejected) {
-                table.push([
-                    item.parent.name,
-                    {content: item.error.message.red}
-                ]);
+                if (item.isWarned) {
+                    table.push([
+                        item.parent.name,
+                        {content: item.error.message.yellow}
+                    ]);
+                } else {
+                    table.push([
+                        item.parent.name,
+                        {content: item.error.message.red}
+                    ]);
+                }
             } else {
                 table.push([
                     item.parent.name,
