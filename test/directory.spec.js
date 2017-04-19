@@ -2,8 +2,8 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import spies from 'chai-spies';
 import fs from 'fs';
-import mockfs from 'mock-fs';
 import path from 'path';
+import mockfs from 'mock-fs';
 import childProcess from 'child_process';
 import { expect } from 'chai';
 
@@ -48,8 +48,8 @@ describe('Directory', () => {
         });
 
         it('should set this.path to the first argument when called with a single string', () => {
-            const expectedPath = './test';
-            const dir = new Directory(expectedPath);
+            const expectedPath = path.resolve('./test');
+            const dir = new Directory('./test');
 
             expect(dir.path).to.equal(expectedPath);
             expect(dir.name).to.equal(path.basename(expectedPath));
@@ -62,14 +62,14 @@ describe('Directory', () => {
             };
             const dir = new Directory(expected);
 
-            expect(dir.path).to.equal(expected.path);
+            expect(dir.path).to.equal(path.resolve(expected.path));
             expect(dir.name).to.equal(expected.name);
         });
 
         it('should set this.path to the first argument & this.name to the second when called whith 2 arguments', () => {
-            const expectedPath = './test';
+            const expectedPath = path.resolve('./test');
             const expectedName = 'peon';
-            const dir = new Directory(expectedPath, expectedName);
+            const dir = new Directory('./test', expectedName);
 
             expect(dir.path).to.equal(expectedPath);
             expect(dir.name).to.equal(expectedName);
@@ -94,7 +94,7 @@ describe('Directory', () => {
             dir.loadGit();
             dir.status().catch(() => {});
 
-            expect(this.spawnSpy).to.have.been.called.with('git', ['status', '--porcelain', '-b']);
+            expect(this.spawnSpy).to.have.been.called.with('git', ['status', '--porcelain', '-b', '-u']);
         });
     });
 
