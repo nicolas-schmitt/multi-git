@@ -1,18 +1,14 @@
-Multi Git
-========
+# Multi Git
 
 A Git command line to manage multiple git repositories at once.
 
-What's new ?
--------------------------------------------------------------------
+## What's new ?
 * nodegit has been dropped in favor of simple-git. That way, you won't have to compile any dependency.
 * Most common git commands are now supported.
 * multi-git can be used from any directory, even if it's not listed in your configuration file.
 * git-flow commands
 
-Intended use
--------------------------------------------------------------------
-
+## Intended use
 If you ever worked in a micro service environment, you've most likely been asked to worked with dozen of projects.
 Keeping them up to date tends to be tedious.
 
@@ -38,8 +34,7 @@ $ multi-git pull
 
 same goes for status, fetch ...
 
-Configuration
--------------------------------------------------------------------
+## Configuration
 multi-git will try to read its configuration file from multiple locations in the following order:
 1. the current working directory
 2. the home directory
@@ -66,6 +61,7 @@ This file must be named `.mg-config.json` and be in `json` format.
     "groups": {
         "awesome-group": {
             "name": "awesome-group",
+            "allowEmptyRelease": false,
             "members": [
                 "repo1",
                 "repo2"
@@ -82,12 +78,19 @@ This file must be named `.mg-config.json` and be in `json` format.
 }
 ````
 
-* Paths must be absolute
+* Paths can be absolute or relative.
+    * If relative, they will be resolved from the current working directory.
 * Paths can contain ~
 * A project can belong to multiple groups
 
-Available commands
--------------------------------------------------------------------
+#### About allowEmptyRelease
+By default, if you attemp to run *multi-git release start* on a group,
+it will run *git flow release start* for each project, wether or not develop is ahead of master.
+Wich means you could create empty release.
+A group with *allowEmptyRelease* set to *false*, will skip such directories.
+
+## Available commands
+
 ````bash
 $ multi-git -h
 multi-git <command> [options]

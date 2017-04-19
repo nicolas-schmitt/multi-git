@@ -1,6 +1,6 @@
 {
   "name": "multi-git",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Handle multiple git repositories at once",
   "bin": {
     "multi-git": "./bin/multi-git.js"

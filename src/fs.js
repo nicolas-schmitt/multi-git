@@ -17,7 +17,7 @@ function expandHomeDir(pathToExpand) {
         return path.join(process.env.HOME, pathToExpand.slice(1));
     }
 
-    return pathToExpand;
+    return path.resolve(pathToExpand);
 }
 
 module.exports = fs;
