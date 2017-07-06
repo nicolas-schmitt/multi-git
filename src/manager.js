@@ -8,6 +8,7 @@ import Group from './group';
 import {
     GroupMissingError,
     NoConfigFileError,
+    ProjectMissingError,
 } from './errors';
 
 const ConfigFileName = '.mg-config.json';
@@ -89,15 +90,18 @@ export default class Manager {
     }
 
     /**
-     * Gets a group by its name and sets it as active.
+     * Gets either a group by its name
+     * or creates and returns a virtual group with a single project in it
+     * before setting it as active.
      * @param {string} groupName - the group name
+     * @param {string} [projectName] - the project name
      * @return {Promise}
      */
-    getGroup(groupName) {
+    getGroup(groupName, projectName) {
         if (this.activeGroup) {
             return Promise.resolve(this.activeGroup);
         } else {
-            return this.initActiveGroup(groupName);
+            return this.initActiveGroup(groupName, projectName);
         }
     }
 
@@ -105,14 +109,17 @@ export default class Manager {
      * Initializes the current group to the requested group.
      * Defaults to the current working directory.
      * @param {string} groupName - the group name
+     * @param {string} [projectName] - the project name
      * @return {Promise}
      */
-    initActiveGroup(groupName) {
+    initActiveGroup(groupName, projectName) {
         return Promise
             .resolve()
             .then(() => {
-                if (_.isUndefined(groupName)) {
+                if (_.isUndefined(groupName) && _.isUndefined(projectName)) {
                     return this.getCwdGroup();
+                } else if (_.isUndefined(groupName) && !_.isUndefined(projectName)) {
+                    return this.getSingleProjectGroup(projectName);
                 } else {
                     return this.getGroupByName(groupName);
                 }
@@ -161,6 +168,25 @@ export default class Manager {
             });
     }
 
+
+    /**
+     * Gets a group containing the requested project.
+     * @param {string} projectName - the project name
+     * @return {Promise}
+     */
+    getSingleProjectGroup(projectName) {
+        return this
+            .getConfig()
+            .then((config) => {
+                const project = config.projects[projectName];
+
+                if (!project) {
+                    throw new ProjectMissingError();
+                }
+
+                return new Group(projectName + ' - virtual', [project]);
+            });
+    }
 
     /**
      * Gets the current working directory group.
