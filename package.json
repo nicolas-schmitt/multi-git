@@ -14,7 +14,7 @@
     "start": "npm run build -- -w",
     "install": "npm run build && node npm-scripts.js install",
     "test": "mocha --compilers js:babel-core/register",
-    "lint": "eslint src bin"
+    "lint": "eslint ./src ./bin"
   },
   "repository": {
     "type": "git",
@@ -48,6 +48,7 @@
     "yargs": "^8.0.2"
   },
   "devDependencies": {
+    "babel-eslint": "^7.2.3",
     "chai": "^4.0.2",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^0.7.1",
@@ -60,11 +61,14 @@
   },
   "babel": {
     "presets": [
-      ["env", {
+      [
+        "env",
+        {
           "targets": {
             "node": "current"
           }
-      }]
+        }
+      ]
     ],
     "plugins": [
       "transform-object-rest-spread"
