@@ -206,68 +206,81 @@ export default class Manager {
         return this
             .cwd
             .hasGit()
-            .then((hasGit) => {
-                if (hasGit) {
-                    return this
-                        .getConfig()
-                        .then(({ groups = {}, defaultGroupSettings = {}, projects = {}, defaultToProject = false }) => {
-                            if (defaultToProject) {
-                                return new Group({
-                                    ...defaultGroupSettings,
-                                    name: this.cwd.name + ' - virtual',
-                                    members: [this.cwd],
-                                });
-                            } else {
-                                const parentGroups = _.filter(groups, (group) => {
-                                    return group.members.indexOf(this.cwd.name) > -1;
-                                });
+            .then((hasGit) => hasGit ? this.getCwdParentGroup() : this.getCwdChildrenGroup());
+    }
 
-                                const memberNames = _.keys(_.reduce(parentGroups, (result, group) => {
-                                    _.forEach(group.members, (member) => {
-                                        result[member] = true;
-                                    });
-
-                                    return result;
-                                }, {}));
-
-                                const members = _.pick(projects, memberNames);
-
-                                return new Group({
-                                    ...defaultGroupSettings,
-                                    name: this.cwd.name + ' - virtual',
-                                    members,
-                                });
-                            }
-                        });
+    /**
+     * Gets a group composed of all groups of which the cwd is a member.
+     * @return {Promise}
+     */
+    getCwdParentGroup() {
+        return this
+            .getConfig()
+            .then(({ groups = {}, defaultGroupSettings = {}, projects = {}, defaultToProject = false }) => {
+                if (defaultToProject) {
+                    return new Group({
+                        ...defaultGroupSettings,
+                        name: this.cwd.name + ' - virtual',
+                        members: [this.cwd],
+                    });
                 } else {
-                    return fs
-                        .readdirAsync(this.cwd.path)
-                        .then((files) => {
-                            return Promise.map(files, (file) => {
-                                return fs
-                                    .statAsync(file)
-                                    .then((stat) => {
-                                        stat.name = file;
-                                        return stat;
-                                    });
-                            });
-                        })
-                        .then((stats) => {
-                            const members = _.reduce(stats, (result, stat) => {
-                                if (stat.isDirectory()) {
-                                    result.push(path.join(this.cwd.path, stat.name));
-                                }
+                    const parentGroups = _.filter(groups, (group) => {
+                        return group.members.indexOf(this.cwd.name) > -1;
+                    });
 
-                                return result;
-                            }, []);
-
-                            return new Group({
-                                ...defaultGroupSettings,
-                                name: this.cwd.name + ' - virtual',
-                                members,
-                            });
+                    const memberNames = _.keys(_.reduce(parentGroups, (result, group) => {
+                        _.forEach(group.members, (member) => {
+                            result[member] = true;
                         });
+
+                        return result;
+                    }, {}));
+
+                    const members = _.pick(projects, memberNames);
+
+                    return new Group({
+                        ...defaultGroupSettings,
+                        name: this.cwd.name + ' - virtual',
+                        members,
+                    });
                 }
+            });
+    }
+
+    /**
+     * Gets a group composed of all subdirectories of the cwd.
+     * @return {Promise}
+     */
+    getCwdChildrenGroup() {
+        const scope = {};
+        return Promise
+            .all([this.getConfig(), fs.readdirAsync(this.cwd.path)])
+            .then(([config, files]) => {
+                scope.config = config;
+                return Promise.map(files, (file) => {
+                    return fs
+                        .statAsync(file)
+                        .then((stat) => {
+                            stat.name = file;
+                            return stat;
+                        });
+                });
+            })
+            .then((stats) => {
+                const { defaultGroupSettings = {} } = scope.config;
+                const members = _.reduce(stats, (result, stat) => {
+                    if (stat.isDirectory()) {
+                        result.push(path.join(this.cwd.path, stat.name));
+                    }
+
+                    return result;
+                }, []);
+
+                return new Group({
+                    ...defaultGroupSettings,
+                    name: this.cwd.name + ' - virtual',
+                    members,
+                });
             });
     }
 }

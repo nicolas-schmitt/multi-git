@@ -309,7 +309,7 @@ export default class Client {
      * @param {string} [config.base] - the feature base, instead of develop
      * @return {Promise}
      */
-    static featureStart(manager, { groupName, featureName, base }) {
+    static featureStart(manager, { groupName, projectName, featureName, base }) {
         const scope = {};
 
         return manager
