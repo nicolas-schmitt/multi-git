@@ -2,12 +2,6 @@
 
 A Git command line to manage multiple git repositories at once.
 
-## What's new ?
-* nodegit has been dropped in favor of simple-git. That way, you won't have to compile any dependency.
-* Most common git commands are now supported.
-* multi-git can be used from any directory, even if it's not listed in your configuration file.
-* git-flow commands
-
 ## Intended use
 If you ever worked in a micro service environment, you've most likely been asked to worked with dozen of projects.
 Keeping them up to date tends to be tedious.
@@ -27,7 +21,7 @@ $ git pull
 ...
 ````
 by that :
-````javascript
+````bash
 $ cd group
 $ multi-git pull
 ````
@@ -44,6 +38,10 @@ This file must be named `.mg-config.json` and be in `json` format.
 
 ````json
 {
+    "defaultToProject": false,
+    "defaultGroupSettings": {
+        "allowEmptyRelease": true
+    },
     "projects": {
         "repo1": {
             "name": "repo1",
@@ -112,18 +110,23 @@ Commands:
 
 Options:
   -g, --group  The project group name
+  -p, --project  The project name
 ````
 
 Behaviour
 -------------------------------------------------------------------
-You can use multi-git with the _--group_ flag:
-In that case multi-git will try to find the group by its name in the configuration file
+You can use multi-git:
+* with the _--group_ flag: In that case multi-git will try to find the group by its name in the configuration file
 and run the specified command on each group member.
-
-or without:
-In that case multi-git, if the current working directory is a git repository,
-multi-git will run the specified command on each member of each group the cwd belongs ;
-if not, it will run the command on each subdirectories of the cwd.
+* with the _--project_ flag: In that case multi-git will try to find the project by its name in the configuration file
+and run the specified command.
+* without either of those:
+    * if ````config.defaultToProject === true````: multi-git will run the specified command in the current working
+    directory, just like git would.
+    * otherwise:
+        * if the current working directory is a git repository, multi-git will run the specified command on each member
+        of each group the cwd belongs ;
+        * if not, it will run the command on each subdirectories of the cwd.
 
 Want to contribute?
 -------------------------------------------------------------------
