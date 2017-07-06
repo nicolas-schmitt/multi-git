@@ -11,10 +11,10 @@
   },
   "scripts": {
     "build": "babel src -d build -s",
-    "watch": "npm run build -- -w",
+    "start": "npm run build -- -w",
     "install": "npm run build && node npm-scripts.js install",
-    "test": "mocha --compilers js:babel-core/register",
-    "lint": "eslint src bin"
+    "test": "mocha --compilers js:babel-register",
+    "lint": "eslint ./src ./bin"
   },
   "repository": {
     "type": "git",
@@ -34,28 +34,31 @@
     "service"
   ],
   "dependencies": {
-    "babel-cli": "^6.23.0",
-    "babel-preset-env": "^1.1.8",
-    "bluebird": "^3.4.7",
-    "bump-regex": "^2.3.0",
+    "babel-cli": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-preset-env": "^1.6.0",
+    "bluebird": "^3.5.0",
+    "bump-regex": "^2.7.0",
     "cli-table2": "^0.2.0",
     "colors": "^1.1.2",
     "inquirer-confirm": "^0.2.2",
     "lodash": "^4.17.4",
-    "simple-git": "^1.66.0",
-    "source-map-support": "^0.4.8",
-    "yargs": "^6.6.0"
+    "simple-git": "^1.73.0",
+    "source-map-support": "^0.4.15",
+    "yargs": "^8.0.2"
   },
   "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "babel-register": "^6.24.1",
     "chai": "^3.5.0",
-    "chai-as-promised": "^6.0.0",
+    "chai-as-promised": "^7.1.1",
     "chai-spies": "^0.7.1",
-    "chai-string": "^1.2.0",
-    "eslint": "^3.13.1",
-    "mocha": "^3.1.2",
-    "mock-fs": "^4.00.0",
+    "chai-string": "^1.4.0",
+    "eslint": "^4.1.1",
+    "mocha": "^3.4.2",
+    "mock-fs": "^4.4.1",
     "nodemon": "^1.11.0",
-    "proxyquire": "^1.7.10"
+    "proxyquire": "^1.8.0"
   },
   "babel": {
     "presets": [
@@ -67,6 +70,9 @@
           }
         }
       ]
+    ],
+    "plugins": [
+      "transform-object-rest-spread"
     ]
   }
 }

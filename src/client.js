@@ -28,6 +28,12 @@ export default class Client {
                 describe: 'The project group name',
                 global: true
             })
+            .option('p', {
+                alias: 'project',
+                type: 'string',
+                describe: 'The project name',
+                global: true
+            })
             .demand(1, 'You must provide a valid command')
             .wrap(Math.min(120, yargs.terminalWidth()));
     }
@@ -105,10 +111,10 @@ export default class Client {
      * @return {Promise}
      */
     static runStatus(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 return group.detailedStatus();
             })
@@ -123,11 +129,11 @@ export default class Client {
      * @return {Promise}
      */
     static runFetch(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -146,11 +152,11 @@ export default class Client {
      * @return {Promise}
      */
     static runPull(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, remoteName, branchName,] = _.get(argv, '_', []);
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 return group.pull(remoteName, branchName);
             })
@@ -165,11 +171,11 @@ export default class Client {
      * @return {Promise}
      */
     static runPush(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, remoteName, branchName,] = _.get(argv, '_', []);
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 return group.push(remoteName, branchName);
             })
@@ -184,12 +190,12 @@ export default class Client {
      * @return {Promise}
      */
     static runCheckout(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, branchName] = _.get(argv, '_', []);
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.checkout(branchName);
@@ -208,12 +214,12 @@ export default class Client {
      * @return {Promise}
      */
     static runAdd(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, ...files] = _.get(argv, '_', []);
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.addFiles(files);
@@ -229,12 +235,12 @@ export default class Client {
      * @return {Promise}
      */
     static runUnstage(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, ...files] = _.get(argv, '_', []);
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.unstageFiles(files);
@@ -250,12 +256,12 @@ export default class Client {
      * @return {Promise}
      */
     static runStash(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, ...command] = _.get(argv, '_', []);
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.stash(command);
@@ -271,19 +277,19 @@ export default class Client {
      * @return {Promise}
      */
     static runFeature(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, action, featureName, base] = _.get(argv, '_', []);
 
         let result;
         switch (action) {
             case 'start':
-                result = Client.featureStart(manager, groupName, featureName, base);
+                result = Client.featureStart(manager, { groupName, projectName, featureName, base });
                 break;
             case 'publish':
-                result = Client.featurePublish(manager, groupName, featureName);
+                result = Client.featurePublish(manager, { groupName, projectName, featureName });
                 break;
             case 'finish':
-                result = Client.featureFinish(manager, groupName, featureName);
+                result = Client.featureFinish(manager, { groupName, projectName, featureName });
                 break;
             default:
                 result = yargs.showHelp();
@@ -296,16 +302,18 @@ export default class Client {
     /**
      * git flow feature start command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} featureName - the feature name
-     * @param {string} base - an optional base for the feature, instead of develop
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.featureName - the feature name
+     * @param {string} [config.base] - the feature base, instead of develop
      * @return {Promise}
      */
-    static featureStart(manager, groupName, featureName, base) {
+    static featureStart(manager, { groupName, projectName, featureName, base }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -333,15 +341,17 @@ export default class Client {
     /**
      * git flow feature publish command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} featureName - the feature name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.featureName - the feature name
      * @return {Promise}
      */
-    static featurePublish(manager, groupName, featureName) {
+    static featurePublish(manager, { groupName, projectName, featureName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -369,15 +379,17 @@ export default class Client {
     /**
      * git flow feature finish command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} featureName - the feature name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.featureName - the feature name
      * @return {Promise}
      */
-    static featureFinish(manager, groupName, featureName) {
+    static featureFinish(manager, { groupName, projectName, featureName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -409,19 +421,19 @@ export default class Client {
      * @return {Promise}
      */
     static runRelease(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, action, releaseName] = _.get(argv, '_', []);
 
         let result;
         switch (action) {
             case 'start':
-                result = Client.releaseStart(manager, groupName, releaseName);
+                result = Client.releaseStart(manager, { groupName, projectName, releaseName });
                 break;
             case 'publish':
-                result = Client.releasePublish(manager, groupName, releaseName);
+                result = Client.releasePublish(manager, { groupName, projectName, releaseName });
                 break;
             case 'finish':
-                result = Client.releaseFinish(manager, groupName, releaseName);
+                result = Client.releaseFinish(manager, { groupName, projectName, releaseName });
                 break;
             default:
                 result = yargs.showHelp();
@@ -434,15 +446,17 @@ export default class Client {
     /**
      * git flow release start command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} releaseName - the release name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.releaseName - the release name
      * @return {Promise}
      */
-    static releaseStart(manager, groupName, releaseName) {
+    static releaseStart(manager, { groupName, projectName, releaseName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -472,15 +486,17 @@ export default class Client {
     /**
      * git flow release publish command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} releaseName - the release name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.releaseName - the release name
      * @return {Promise}
      */
-    static releasePublish(manager, groupName, releaseName) {
+    static releasePublish(manager, { groupName, projectName, releaseName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -508,15 +524,17 @@ export default class Client {
     /**
      * git flow release finish command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} releaseName - the release name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.releaseName - the release name
      * @return {Promise}
      */
-    static releaseFinish(manager, groupName, releaseName) {
+    static releaseFinish(manager, { groupName, projectName, releaseName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -548,19 +566,19 @@ export default class Client {
      * @return {Promise}
      */
     static runHotfix(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, action, hotfixName, base] = _.get(argv, '_', []);
 
         let result;
         switch (action) {
             case 'start':
-                result = Client.hotfixStart(manager, groupName, hotfixName, base);
+                result = Client.hotfixStart(manager, { groupName, projectName, hotfixName, base });
                 break;
             case 'publish':
-                result = Client.hotfixPublish(manager, groupName, hotfixName);
+                result = Client.hotfixPublish(manager, { groupName, projectName, hotfixName });
                 break;
             case 'finish':
-                result = Client.hotfixFinish(manager, groupName, hotfixName);
+                result = Client.hotfixFinish(manager, { groupName, projectName, hotfixName });
                 break;
             default:
                 result = yargs.showHelp();
@@ -573,16 +591,18 @@ export default class Client {
     /**
      * git flow hotfix start command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} hotfixName - the hotfix name
-     * @param {string} base - an optional base for the hotfix, instead of develop
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.hotfixName - the hotfix name
+     * @param {string} [config.base] - the hotfix base, instead of develop
      * @return {Promise}
      */
-    static hotfixStart(manager, groupName, hotfixName, base) {
+    static hotfixStart(manager, { groupName, projectName, hotfixName, base }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -610,15 +630,17 @@ export default class Client {
     /**
      * git flow hotfix publish command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} hotfixName - the hotfix name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.hotfixName - the hotfix name
      * @return {Promise}
      */
-    static hotfixPublish(manager, groupName, hotfixName) {
+    static hotfixPublish(manager, { groupName, projectName, hotfixName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -646,15 +668,17 @@ export default class Client {
     /**
      * git flow hotfix finish command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} hotfixName - the hotfix name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.hotfixName - the hotfix name
      * @return {Promise}
      */
-    static hotfixFinish(manager, groupName, hotfixName) {
+    static hotfixFinish(manager, { groupName, projectName, hotfixName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -686,19 +710,19 @@ export default class Client {
      * @return {Promise}
      */
     static runBugfix(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, action, bugfixName, base] = _.get(argv, '_', []);
 
         let result;
         switch (action) {
             case 'start':
-                result = Client.bugfixStart(manager, groupName, bugfixName, base);
+                result = Client.bugfixStart(manager, { groupName, projectName, bugfixName, base });
                 break;
             case 'publish':
-                result = Client.bugfixPublish(manager, groupName, bugfixName);
+                result = Client.bugfixPublish(manager, { groupName, projectName, bugfixName });
                 break;
             case 'finish':
-                result = Client.bugfixFinish(manager, groupName, bugfixName);
+                result = Client.bugfixFinish(manager, { groupName, projectName, bugfixName });
                 break;
             default:
                 result = yargs.showHelp();
@@ -711,16 +735,18 @@ export default class Client {
     /**
      * git flow bugfix start command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} bugfixName - the bugfix name
-     * @param {string} base - an optional base for the bugfix, instead of develop
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.bugfixName - the bugfix name
+     * @param {string} [config.base] - the bugfix base, instead of develop
      * @return {Promise}
      */
-    static bugfixStart(manager, groupName, bugfixName, base) {
+    static bugfixStart(manager, { groupName, projectName, bugfixName, base }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -748,15 +774,17 @@ export default class Client {
     /**
      * git flow bugfix publish command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} bugfixName - the bugfix name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.bugfixName - the bugfix name
      * @return {Promise}
      */
-    static bugfixPublish(manager, groupName, bugfixName) {
+    static bugfixPublish(manager, { groupName, projectName, bugfixName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -784,15 +812,17 @@ export default class Client {
     /**
      * git flow bugfix finish command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} bugfixName - the bugfix name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.bugfixName - the bugfix name
      * @return {Promise}
      */
-    static bugfixFinish(manager, groupName, bugfixName) {
+    static bugfixFinish(manager, { groupName, projectName, bugfixName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -824,16 +854,16 @@ export default class Client {
      * @return {Promise}
      */
     static runSupport(manager, argv) {
-        const {group: groupName} = argv;
+        const {group: groupName, project: projectName} = argv;
         const [, action, supportName, base] = _.get(argv, '_', []);
 
         let result;
         switch (action) {
             case 'start':
-                result = Client.supportStart(manager, groupName, supportName, base);
+                result = Client.supportStart(manager, { groupName, projectName, supportName, base });
                 break;
             case 'publish':
-                result = Client.supportPublish(manager, groupName, supportName);
+                result = Client.supportPublish(manager, { groupName, projectName, supportName });
                 break;
             default:
                 result = yargs.showHelp();
@@ -846,16 +876,18 @@ export default class Client {
     /**
      * git flow support start command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} supportName - the support name
-     * @param {string} base - an optional base for the support, instead of develop
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.supportName - the support name
+     * @param {string} [config.base] - the support base, instead of develop
      * @return {Promise}
      */
-    static supportStart(manager, groupName, supportName, base) {
+    static supportStart(manager, { groupName, projectName, supportName, base }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
@@ -883,15 +915,17 @@ export default class Client {
     /**
      * git flow support publish command handler
      * @param {Manager} manager - multi-git manager
-     * @param {string} groupName - the group name
-     * @param {string} supportName - the support name
+     * @param {Object} config - the command configuration
+     * @param {string} config.groupName - the group name
+     * @param {string} [config.projectName] - the group name
+     * @param {string} config.supportName - the support name
      * @return {Promise}
      */
-    static supportPublish(manager, groupName, supportName) {
+    static supportPublish(manager, { groupName, projectName, supportName }) {
         const scope = {};
 
         return manager
-            .getGroup(groupName)
+            .getGroup(groupName, projectName)
             .then((group) => {
                 scope.group = group;
                 return group.fetch();
