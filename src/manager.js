@@ -155,14 +155,17 @@ export default class Manager {
     getGroupByName(groupName) {
         return this
             .getConfig()
-            .then((config) => {
-                const group = config.groups[groupName];
-
-                if (!group) {
+            .then(({ groups = {}, defaultGroupSettings = {}, projects = {} }) => {
+                if (!groups[groupName]) {
                     throw new GroupMissingError();
                 }
 
-                group.members = _.values(_.pick(config.projects, group.members));
+                const group = {
+                    ...defaultGroupSettings,
+                    ...groups[groupName],
+                };
+
+                group.members = _.values(_.pick(projects, group.members));
 
                 return new Group(group);
             });
@@ -177,14 +180,18 @@ export default class Manager {
     getSingleProjectGroup(projectName) {
         return this
             .getConfig()
-            .then((config) => {
-                const project = config.projects[projectName];
+            .then(({ defaultGroupSettings = {}, projects = {} }) => {
+                const project = projects[projectName];
 
                 if (!project) {
                     throw new ProjectMissingError();
                 }
 
-                return new Group(projectName + ' - virtual', [project]);
+                return new Group({
+                    ...defaultGroupSettings,
+                    name: projectName + ' - virtual',
+                    members: [project],
+                });
             });
     }
 
@@ -203,22 +210,34 @@ export default class Manager {
                 if (hasGit) {
                     return this
                         .getConfig()
-                        .then((config) => {
-                            const groups = _.filter(config.groups, (group) => {
-                                return group.members.indexOf(this.cwd.name) > -1;
-                            });
-
-                            const memberNames = _.keys(_.reduce(groups, (result, group) => {
-                                _.forEach(group.members, (member) => {
-                                    result[member] = true;
+                        .then(({ groups = {}, defaultGroupSettings = {}, projects = {}, defaultToProject = false }) => {
+                            if (defaultToProject) {
+                                return new Group({
+                                    ...defaultGroupSettings,
+                                    name: this.cwd.name + ' - virtual',
+                                    members: [this.cwd],
+                                });
+                            } else {
+                                const parentGroups = _.filter(groups, (group) => {
+                                    return group.members.indexOf(this.cwd.name) > -1;
                                 });
 
-                                return result;
-                            }, {}));
+                                const memberNames = _.keys(_.reduce(parentGroups, (result, group) => {
+                                    _.forEach(group.members, (member) => {
+                                        result[member] = true;
+                                    });
 
-                            const members = _.pick(config.projects, memberNames);
+                                    return result;
+                                }, {}));
 
-                            return new Group(this.cwd.name + ' - virtual', members);
+                                const members = _.pick(projects, memberNames);
+
+                                return new Group({
+                                    ...defaultGroupSettings,
+                                    name: this.cwd.name + ' - virtual',
+                                    members,
+                                });
+                            }
                         });
                 } else {
                     return fs
@@ -242,7 +261,11 @@ export default class Manager {
                                 return result;
                             }, []);
 
-                            return new Group(this.cwd.name + ' - virtual', members);
+                            return new Group({
+                                ...defaultGroupSettings,
+                                name: this.cwd.name + ' - virtual',
+                                members,
+                            });
                         });
                 }
             });

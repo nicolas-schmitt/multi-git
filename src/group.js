@@ -12,22 +12,17 @@ const bumpVersionAsync = Promise.promisify(bumpVersion);
  * Represents a group of directories.
  * Either the specified directory or the current working directory.
  * @constructor
- * @param {string|object} path - either a directory path or a config object.
+ * @param {Object} config - a config object.
+ * @param {string} config.name - the group name.
+ * @param {Object|string[]} members - either a directory path or a config object.
+ * @param {boolean} allowEmptyRelease - wether or not allow empty release.
  */
 export default class Group {
-    constructor() {
-        if (_.size(arguments) === 1 && _.isObject(arguments[0])) {
-            const config = arguments[0];
-            this.name = config.name;
-            this.members = config.members;
-            this.allowEmptyRelease = config.allowEmptyRelease;
-        } else {
-            this.name = arguments[0] || '';
-            this.members = arguments[1] || [];
-            this.allowEmptyRelease = true;
-        }
+    constructor({ name, members = [], allowEmptyRelease = true }) {
+        this.name = name;
+        this.allowEmptyRelease = !!allowEmptyRelease;
 
-        this.members = _.map(this.members, (member) => {
+        this.members = _.map(members, (member) => {
             return new Directory(member);
         });
     }
