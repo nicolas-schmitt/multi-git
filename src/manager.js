@@ -155,10 +155,7 @@ export default class Manager {
                     throw new GroupMissingError();
                 }
 
-                group.members = _.chain(config.projects)
-                    .pick(group.members)
-                    .values()
-                    .value();
+                group.members = _.values(_.pick(config.projects, group.members));
 
                 return new Group(group);
             });
@@ -185,19 +182,15 @@ export default class Manager {
                                 return group.members.indexOf(this.cwd.name) > -1;
                             });
 
-                            const members = _.chain(groups)
-                                .reduce((result, group) => {
-                                    _.forEach(group.members, (member) => {
-                                        result[member] = true;
-                                    });
+                            const memberNames = _.keys(_.reduce(groups, (result, group) => {
+                                _.forEach(group.members, (member) => {
+                                    result[member] = true;
+                                });
 
-                                    return result;
-                                }, {})
-                                .keys()
-                                .thru((memberNames) => {
-                                    return _.pick(config.projects, memberNames);
-                                })
-                                .value();
+                                return result;
+                            }, {}));
+
+                            const members = _.pick(config.projects, memberNames);
 
                             return new Group(this.cwd.name + ' - virtual', members);
                         });
