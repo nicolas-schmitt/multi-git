@@ -281,6 +281,15 @@ export default class Directory {
         return this.git.stashAsync(options);
     }
 
+    /**
+     * Gets a summary of the diff between 2 git references
+     * @param {Array} options - a string array of git diff options
+     * @return {object}
+     */
+    diffSummary(options = []) {
+        return this.git.diffSummaryAsync(options);
+    }
+
     // git flow methods
 
     /**
@@ -767,8 +776,8 @@ export default class Directory {
 
     /**
      * Gets how much commits the left branch has more than the right one
-     * @param {string} left - a git config object
-     * @param {string} right - a git config object
+     * @param {string} left - a git reference
+     * @param {string} right - a git reference
      * @return {string}
      */
     countRevisions(left, right) {
@@ -806,10 +815,13 @@ export default class Directory {
             .then((config) => {
                 const left = config.gitflow.branch.master;
                 const right = base || config.gitflow.branch.develop;
-                return this.countRevisions(left, right);
+                return Promise.all([
+                    this.countRevisions(left, right),
+                    this.diffSummary([left, right]),
+                ]);
             })
-            .then((result) => {
-                return result.diff > 0;
+            .then(([revisions, summary]) => {
+                return revisions.diff > 0 && summary.files.length > 0;
             });
     }
 }

@@ -54,6 +54,14 @@ export class GroupMissingError extends Error {
     }
 }
 
+export class ProjectMissingError extends Error {
+    constructor(message = 'Requested project is missing') {
+        super(message);
+
+        this.code = 'project-missing';
+    }
+}
+
 export class ChainBreaker extends Error {
     constructor(message = 'This promise chain has been terminated early') {
         super(message);
